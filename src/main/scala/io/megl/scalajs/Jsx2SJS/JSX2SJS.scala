@@ -154,7 +154,7 @@ object JSX2SJS extends App {
         println(s"MethodNames: ${rc.methodNames}")
         println(s"Properties:")
         rc.properties.values.toList.sortBy(_.name).foreach(p => println(s" - $p"))
-
+        println(Template.render(rc))
       case _ =>
     })
 

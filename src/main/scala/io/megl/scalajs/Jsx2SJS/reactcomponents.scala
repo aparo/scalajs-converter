@@ -22,6 +22,8 @@ case class ReactClass(name: String, astMethods: List[ObjectProperty]) {
 
   def methodNames = astMethods.map(_.getLeft.asInstanceOf[Name].getIdentifier)
 
+  lazy val hasChildren: Boolean = methodsMap.exists(m => m._2.toSource().contains("this.props.children"))
+
   lazy val methodsMap: Map[String, AstNode] = astMethods.map(mth => (mth.getLeft.asInstanceOf[Name].getIdentifier -> mth.getRight)).toMap
 
   /* we retrieve the mixins properties*/
@@ -75,7 +77,7 @@ case class ReactClass(name: String, astMethods: List[ObjectProperty]) {
     defaults.foreach {
       prop =>
         if (properties.contains(prop.name)) {
-          val nProperty=properties(prop.name).copy(default = prop.default)
+          val nProperty = properties(prop.name).copy(default = prop.default)
           properties += (prop.name -> nProperty)
         } else {
           properties += (prop.name -> prop)
@@ -84,12 +86,119 @@ case class ReactClass(name: String, astMethods: List[ObjectProperty]) {
     this.properties = properties.toMap
   }
 
+  val dictRx = """classes\["(.*)"\]\s*=\s*(.*);""".r
 
-  def renderCode:String={
-    val code=new ListBuffer[String]()
+
+  private def cookCode(code: String): String = {
+    var res = code.replace("this.props.children", "C").replace("this.props.", "P.").replace("'", "\"")
+    res = dictRx.replaceAllIn(res, m => s"""classes += ("${m.group(1)}" -> ${m.group(2)})""").replace("{}", "Map()")
+    res.split("\n").map(_.stripSuffix(";")).mkString("\n")
+  }
+
+  def renderCode: String = {
+    val code = new ListBuffer[String]()
     code += "/*"
-
+    methodsMap.get("render") match {
+      case Some(node) =>
+        code += cookCode(node.toSource(2))
+      case _ =>
+    }
     code += "*/"
     code.mkString("\n")
   }
+
+  val REACTMETHODS = Set("render", "getDefaultProps", "propTypes", "displayName", "mixins")
+
+  def extraCode: String = {
+    val code = new ListBuffer[String]()
+    methodsMap.filterNot(p => REACTMETHODS.contains(p._1)).foreach {
+      case (name, node) =>
+        code += "/*"
+        code += s"  def $name("
+        code += cookCode(node.toSource(2))
+        code += "  )"
+        code += "*/"
+      case _ =>
+    }
+    code.mkString("\n")
+  }
+
+  def propertiesCode: String = {
+    val code = new ListBuffer[String]()
+    code += "case class Props("
+    val allProps = properties.values.toList.sortBy(_.name)
+    val validProps = new ListBuffer[String]()
+    allProps.filter(_.default.isEmpty).foreach {
+      prop =>
+        validProps += s"${prop.name}:${prop.`type`}"
+    }
+    allProps.filter(_.default.isDefined).foreach {
+      prop =>
+        validProps += s"${prop.name}:${prop.`type`}=${prop.default.get}"
+    }
+    code += validProps.grouped(3).map(_.mkString(", ")).mkString(",\n  ")
+    code += ") extends BoostrapMixinProps\n"
+    code.mkString("")
+  }
+
+
+  def applyCode: String = {
+    val code = new ListBuffer[String]()
+    code += "def apply("
+    val allProps = properties.values.toList.sortBy(_.name)
+    val validProps = new ListBuffer[String]()
+    allProps.filter(_.default.isEmpty).foreach {
+      prop =>
+        validProps += s"${prop.name}:${prop.`type`}"
+    }
+    allProps.filter(_.default.isDefined).foreach {
+      prop =>
+        validProps += s"${prop.name}:${prop.`type`}=${prop.default.get}"
+    }
+    validProps += "ref: js.UndefOr[String] = \"\""
+    validProps += "key: js.Any = {}"
+    code += validProps.grouped(3).map(_.mkString(", ")).mkString(",\n  ")
+
+    if (this.hasChildren)
+      validProps += "(children: ReactNode*)"
+    code += "= {\n"
+    code += "   component.set(key, ref)(Props("
+    val signatures = new ListBuffer[String]()
+    allProps.filter(_.default.isEmpty).foreach {
+      prop =>
+        signatures += s"${prop.name} = ${prop.name}"
+    }
+    allProps.filter(_.default.isDefined).foreach {
+      prop =>
+        signatures += s"${prop.name} = ${prop.name}"
+    }
+
+    code += signatures.grouped(3).map(_.mkString(", ")).mkString(",\n  ")
+    code += ")"
+    if(this.hasChildren)
+      code += ",children"
+    code += ")\n"
+    code += "}\n"
+    code.mkString("")
+  }
+
+  /*
+  *   def apply(active: Boolean,
+              disabled: Boolean,
+              block: Boolean,
+              navItem: Boolean,
+              navDropdown: Boolean,
+              componentClass: ReactNode = null,
+              href: String = "",
+              target: String = "",
+              className: String = "",
+              bsClass: String = "", bsStyle: String = "", bsSize: String = "",
+              ref: js.UndefOr[String] = "", key: js.Any = {})(children: ReactNode*) = {
+      component.set(key, ref)(Props(active = active, disabled = disabled, block = block,
+        navItem = navItem, navDropdown = navDropdown,
+        componentClass = componentClass, href = href, target = target, className = className,
+        bsClass = bsClass, bsStyle = bsStyle, bsSize = bsSize
+      ), children)
+    }
+  */
 }
