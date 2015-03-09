@@ -20,14 +20,14 @@ object Template {
 
   val classHeader=
     """
-      |object |NAME| {
+      |object |NAME| /* mixins: |MIXINS|*/{
       |
       |  case class State()
       |
       |  class Backend(t: BackendScope[Props, State]) {
       |  }
       |
-      |  val component = ReactComponentB[Props](|NAME|)
+      |  val component = ReactComponentB[Props]("|NAME|")
       |    .initialState(State())
       |    .backend(new Backend(_))
       |    .render((P, C, S, B) => {
@@ -44,12 +44,13 @@ object Template {
     def render(reactClass:ReactClass):String={
       val code=new ListBuffer[String]()
       code +=header
-      code +=classHeader.replace("|NAME|", reactClass.displayName)
+      code +=classHeader.replace("|NAME|", reactClass.displayName).replace("|MIXINS|", reactClass.mixins.mkString(" with "))
       code += reactClass.renderCode
       code += renderEnd
       code += reactClass.extraCode
       code += reactClass.propertiesCode
       code += reactClass.applyCode
+      code += "\n}\n"
 
       code.mkString("")
     }

@@ -12,7 +12,7 @@ import scala.xml.pull._
 
 object HTML2SJS extends App {
 
-  val filename = args(1)
+  val filename = args(0)
   convertToXML(filename)
 
   val xml = new XMLEventReader(Source.fromFile(filename + ".xml"))

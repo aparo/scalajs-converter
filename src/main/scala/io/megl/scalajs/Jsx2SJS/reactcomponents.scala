@@ -26,17 +26,18 @@ case class ReactClass(name: String, astMethods: List[ObjectProperty]) {
 
   lazy val methodsMap: Map[String, AstNode] = astMethods.map(mth => (mth.getLeft.asInstanceOf[Name].getIdentifier -> mth.getRight)).toMap
 
-  /* we retrieve the mixins properties*/
-  private def mixinsProperties: List[ReactProperty] = methodsMap.get("mixins") match {
+  lazy val mixins: List[String] = methodsMap.get("mixins") match {
     case Some(mixinNode) =>
-      mixinNode.asInstanceOf[ArrayLiteral].getElements.flatMap {
+      mixinNode.asInstanceOf[ArrayLiteral].getElements.map {
         node =>
-          val name = node.asInstanceOf[Name].getIdentifier
-          BootstrapCommon.mixinProperties.getOrElse(name, Nil)
+          node.asInstanceOf[Name].getIdentifier
       }.toList
     case None =>
       Nil
   }
+
+  /* we retrieve the mixins properties*/
+  private def mixinsProperties: List[ReactProperty] = mixins.flatMap(v => BootstrapCommon.mixinProperties.getOrElse(v, Nil))
 
   private def propTypesProperties: List[ReactProperty] = methodsMap.get("propTypes") match {
     case Some(propTypeNode) =>
@@ -49,7 +50,14 @@ case class ReactClass(name: String, astMethods: List[ObjectProperty]) {
               val (typ, default) = res
               ReactProperty(name, typ, default)
             case None =>
-              throw new RuntimeException(s"Invalid $target")
+              if(target.contains("React.PropTypes.oneOf")){
+                //                target.replace("(['prev', 'next'])")
+                val value=target.replace("React.PropTypes.oneOf", "").drop(2).dropRight(2).split(",").map(_.trim).head
+                ReactProperty(name, Generator.guessTypeByValue(value), None)
+              } else {
+                throw new RuntimeException(s"Invalid $target")
+
+              }
           }
       }.toList
     case _ => Nil
@@ -157,10 +165,9 @@ case class ReactClass(name: String, astMethods: List[ObjectProperty]) {
     }
     validProps += "ref: js.UndefOr[String] = \"\""
     validProps += "key: js.Any = {}"
-    code += validProps.grouped(3).map(_.mkString(", ")).mkString(",\n  ")
-
+    code += validProps.grouped(3).map(_.mkString(", ")).mkString(",\n  ")+")"
     if (this.hasChildren)
-      validProps += "(children: ReactNode*)"
+      code += "(children: ReactNode*)"
     code += "= {\n"
     code += "   component.set(key, ref)(Props("
     val signatures = new ListBuffer[String]()
