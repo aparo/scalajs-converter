@@ -75,17 +75,6 @@ case class CClass(name: String, variables: List[Variable]){
     code += s"    )\n"
     code += s"  }\n"
 
-//      new Document(
-//        string = json.as[String]("string", ""),
-//        lang = json.as[String]("lang", ""),
-//        originalText = json.as[String]("original_text", json.as[String]("string", "")),
-//        sections = json.as[js.Array[js.Dictionary[Any]]]("sections", js.Array[js.Dictionary[Any]]()).map(sectionFromJson).toList,
-//        entities = json.as[js.Array[js.Dictionary[Any]]]("entities", js.Array[js.Dictionary[Any]]()).map(entityFromJson).toList,
-//        names = json.as[js.Array[js.Dictionary[Any]]]("names", js.Array[js.Dictionary[Any]]()).map(tokenFromJson).toList
-//      )
-//    }
-
-
     code += "\n}"
     code.mkString("")
   }
@@ -94,62 +83,66 @@ case class CClass(name: String, variables: List[Variable]){
 
 }
 
-object JSON2CC extends App {
+object JSON2CC {
 
-  val filename = args(0)
-  val json = Json.parse(Source.fromFile(filename, "utf8").getLines().mkString)
-  val classes = new ListBuffer[(String, CClass)]()
+  def convertToCC(rootName:String, jsonText:String):String={
+    val json=Json.parse(jsonText)
+    val classes = new ListBuffer[(String, CClass)]()
 
-  def extractType(name:String, jsValue:JsValue):(String, Boolean)={
-    jsValue match {
-      case JsNull =>
-        "Any" -> false
-      case j: JsBoolean =>
-        "Boolean" -> false
-      case j: JsString =>
-        "String"-> false
-      case JsNumber(n) =>
-        if(n.toString().contains(".")){
-          "Double" -> false
-        } else
-          "Int" -> false
-      case JsArray(values) =>
-        if(values.isEmpty)
-          "Any" -> true
-        else
-          extractType(name, values.head)._1 -> true
-      case jo:JsObject =>
-        val cls=extractClass(name, jo)
-        classes += (name -> cls)
-         cls.name -> true
-    }
-  }
-
-  def extractClass(name: String, js: JsObject): CClass = {
-    val variables = js.fields
-      .flatMap {
-      case (name, jsvalue) =>
-        if(name=="mappings") None else{
-          val (typ, multiple) = extractType(name, jsvalue)
-
-          Some(Variable(name, typ, multiple = multiple))
-
-        }
+    def extractType(name:String, jsValue:JsValue):(String, Boolean)={
+      jsValue match {
+        case JsNull =>
+          "Any" -> false
+        case j: JsBoolean =>
+          "Boolean" -> false
+        case j: JsString =>
+          "String"-> false
+        case JsNumber(n) =>
+          if(n.toString().contains(".")){
+            "Double" -> false
+          } else
+            "Int" -> false
+        case JsArray(values) =>
+          if(values.isEmpty)
+            "Any" -> true
+          else
+            extractType(name, values.head)._1 -> true
+        case jo:JsObject =>
+          val cls=extractClass(name, jo)
+          classes += (name -> cls)
+          cls.name -> true
+      }
     }
 
-    CClass(name, variables = variables.toList)
+    def extractClass(name: String, js: JsObject): CClass = {
+      val variables = js.fields
+        .flatMap {
+        case (name, jsvalue) =>
+          if(name=="mappings") None else{
+            val (typ, multiple) = extractType(name, jsvalue)
+
+            Some(Variable(name, typ, multiple = multiple))
+
+          }
+      }
+
+      CClass(name, variables = variables.toList)
+    }
+
+
+    val res=extractClass(rootName, json.as[JsObject])
+    classes += (rootName -> res)
+//    println(res)
+//    println(classes)
+
+    val code=new ListBuffer[String]()
+    classes.foreach{
+      cc =>
+        code += cc._2.code
+        code += cc._2.codeObject
+        code += "\n"
+    }
+    code.mkString("\n")
   }
 
-
-  val res=extractClass("ClusterState", json.as[JsObject])
-  classes += ("ClusterState" -> res)
-  println(res)
-  println(classes)
-
-  classes.foreach{
-    cc =>
-      println(cc._2.code)
-      println(cc._2.codeObject)
-      println()
-  }
 }

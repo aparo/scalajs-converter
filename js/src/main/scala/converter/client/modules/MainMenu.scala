@@ -18,7 +18,9 @@ object MainMenu {
 
 
   private val menuItems = Seq(
-    MenuItem(_ => "Dashboard", Icon.dashboard, MainRouter.dashboardLoc)
+    MenuItem(_ => "HTML2VDOM", Icon.rotateLeft, MainRouter.html2vdomLoc),
+    MenuItem(_ => "JSON 2 CaseClass", Icon.rotateRight, MainRouter.json2ccLoc)
+
   )
 
   private val MainMenu = ReactComponentB[Props]("MainMenu")

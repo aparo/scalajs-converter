@@ -1,7 +1,5 @@
 package io.megl.scalajs
 
-import java.io.File
-
 import com.google.common.base.CaseFormat
 import org.htmlcleaner._
 
@@ -10,10 +8,8 @@ import scala.io.Source
 import scala.xml.pull._
 
 
-object HTML2SJS extends App {
+object HTML2SJS {
 
-  //  val filename = args(0)
-  //  convertToXML(filename)
   def processString(htmlCode: String): String = {
 
 

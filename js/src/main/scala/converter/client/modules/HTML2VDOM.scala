@@ -7,7 +7,7 @@ import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.prefix_<^._
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 
-object Dashboard {
+object HTML2VDOM {
 
   class Backend(t: BackendScope[MainRouter.Router, State]) {
     def changedHTML(event: ReactEventI): Unit = {
@@ -24,12 +24,11 @@ object Dashboard {
 
   case class State(htmlCode:String="", vdomCode:String="")
   // create the React component for Dashboard
-  val component = ReactComponentB[MainRouter.Router]("Dashboard")
+  val component = ReactComponentB[MainRouter.Router]("HTML 2 VDOM")
     .initialState(State())
     .backend(new Backend(_))
     .render((router,S,B) => {
     // get internal links
-    val appLinks = MainRouter.appLinks(router)
     <.div(
       <.h2("HTML to ScalaJS-React VDOM"),
     <.div(^.cls:="row",
