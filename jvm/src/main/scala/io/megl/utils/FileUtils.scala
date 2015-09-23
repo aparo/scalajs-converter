@@ -1,5 +1,6 @@
 package io.megl.utils
 
+import scala.language.postfixOps
 import java.io._
 import java.security.AccessController
 
@@ -8,6 +9,7 @@ import sun.security.action.GetPropertyAction
 
 import scala.io.Codec
 import scala.language.implicitConversions
+
 /** A wrapper around file, allowing iteration either on direct children
      or on directory tree */
 class RichFile(file: File) {

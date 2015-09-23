@@ -36,15 +36,15 @@ object Settings {
 
   /** Declare global dependency versions here to avoid mismatches in multi part dependencies */
   object versions {
-    val scala = "2.11.6"
-    val scalajsReact = "0.8.2"
+    val scala = "2.11.7"
+    val scalajsReact = "0.9.2"
     val react = "0.12.1"
     val jQuery = "1.11.1"
     val bootstrap = "3.3.2"
     val chartjs = "1.0.1"
     val log4js = "1.4.10"
     val spray = "1.3.2"
-    val akka = "2.3.9"
+    val akka = "2.3.14"
   }
 
   /**
@@ -53,7 +53,7 @@ object Settings {
    */
   val sharedDependencies = Def.setting(Seq(
     "com.lihaoyi" %%% "autowire" % "0.2.5",
-    "com.lihaoyi" %%% "upickle" % "0.2.7",
+    "com.lihaoyi" %%% "upickle" % "0.3.6",
     "com.lihaoyi" %%% "utest" % "0.3.1",
     "org.webjars" % "font-awesome" % "4.3.0-1" % Provided,
     "org.webjars" % "bootstrap" % versions.bootstrap % Provided
@@ -67,10 +67,11 @@ object Settings {
     "com.typesafe.scala-logging" %% "scala-logging" % "3.1.0",
     //"com.github.scopt" %% "scopt" % "3.2.0"
     "com.google.guava" % "guava" % "18.0",
-    "com.typesafe.play" % "play-json_2.11" % "2.3.7",
+    "com.typesafe.play" %% "play-json" % "2.3.7",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.10",
     "org.mozilla" % "rhino" % "1.7R4",
-    "org.scala-lang.modules" %% "scala-xml" % "1.0.3"
+    "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
+    "org.specs2" %% "specs2" % "2.3.13" % "test"
     //"com.eed3si9n" %% "treehugger" % "0.3.0"
 
   ))

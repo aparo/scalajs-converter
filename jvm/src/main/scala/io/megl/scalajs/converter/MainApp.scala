@@ -5,12 +5,12 @@ import com.typesafe.config.ConfigFactory
 import converter.shared.Api
 import spray.http._
 import spray.routing.SimpleRoutingApp
-
+import upickle.default._
 import scala.util.Properties
 
-object Router extends autowire.Server[String, upickle.Reader, upickle.Writer] {
-  def read[Result: upickle.Reader](p: String) = upickle.read[Result](p)
-  def write[Result: upickle.Writer](r: Result) = upickle.write(r)
+object Router extends autowire.Server[String, Reader, Writer] {
+  def read[Result: Reader](p: String) = read[Result](p)
+  def write[Result: Writer](r: Result) = write(r)
 }
 
 object Config {
@@ -26,7 +26,7 @@ object MainApp extends SimpleRoutingApp {
     // use system's dispatcher as ExecutionContext for futures etc.
     implicit val context = system.dispatcher
 
-    val port = Properties.envOrElse("SPA_PORT", "8080").toInt
+    val port = Properties.envOrElse("CONVERTER_PORT", "8080").toInt
 
     val apiService = new ApiService
 
@@ -52,7 +52,7 @@ object MainApp extends SimpleRoutingApp {
             complete {
               // handle API requests via autowire
               Router.route[Api](apiService)(
-                autowire.Core.Request(s, upickle.read[Map[String, String]](e))
+                autowire.Core.Request(s, read[Map[String, String]](e))
               )
             }
           }

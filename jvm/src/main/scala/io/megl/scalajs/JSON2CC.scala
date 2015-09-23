@@ -110,7 +110,7 @@ object JSON2CC {
         case jo:JsObject =>
           val cls=extractClass(name, jo)
           classes += (name -> cls)
-          cls.name -> true
+          cls.name -> false
       }
     }
 
