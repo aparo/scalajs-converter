@@ -1,4 +1,4 @@
-package spatutorial.client.ukko
+package converter.client.ukko
 
 trait Actor {
   type Receive = PartialFunction[Any, Unit]

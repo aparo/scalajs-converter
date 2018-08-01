@@ -1,4 +1,4 @@
-package spatutorial.client.components
+package converter.client.components
 
 import japgolly.scalajs.react.vdom.html_<^._
 import japgolly.scalajs.react.{Callback, ScalaComponent}

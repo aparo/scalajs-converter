@@ -1,4 +1,4 @@
-package spatutorial.client.logger
+package converter.client.logger
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal

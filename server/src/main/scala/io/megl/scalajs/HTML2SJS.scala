@@ -122,9 +122,7 @@ object HTML2SJS {
     val xml = new XMLEventReader(Source.fromString(convertToXML(htmlCode)))
 
     var level = 0
-    var contains = false
     val elementStack = new scala.collection.mutable.Stack[Int]
-    val elementInStack = new scala.collection.mutable.Stack[Int]
     val tagStack = new scala.collection.mutable.Stack[String]
     var disableIdent = false
     var buf = ArrayBuffer[String]()

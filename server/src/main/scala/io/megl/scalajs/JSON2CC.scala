@@ -4,7 +4,6 @@ import com.google.common.base.CaseFormat
 import play.api.libs.json._
 
 import scala.collection.mutable.ListBuffer
-import scala.io.Source
 
 case class Variable(name: String, `type`: String, default: Option[String] = None, multiple:Boolean=false){
   def code:String={

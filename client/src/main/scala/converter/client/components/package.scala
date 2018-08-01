@@ -1,4 +1,4 @@
-package spatutorial.client
+package converter.client
 
 package object components {
   // expose jQuery under a more familiar name

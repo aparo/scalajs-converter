@@ -1,4 +1,4 @@
-package spatutorial.client
+package converter.client
 
 package object logger {
   private val defaultLogger = LoggerFactory.getLogger("Log")

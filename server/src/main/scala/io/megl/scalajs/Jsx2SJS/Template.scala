@@ -1,12 +1,10 @@
 package io.megl.scalajs.Jsx2SJS
 
-import scala.collection.mutable.ListBuffer
-
 /**
- * Created by alberto on 19/02/15.
- */
+  * Created by alberto on 19/02/15.
+  */
 object Template {
-  val header=
+  val header =
     """
       |package chandu0101.scalajs.react.components.bootstrap
       |
@@ -18,7 +16,7 @@ object Template {
       |
     """.stripMargin
 
-  val classHeader=
+  val classHeader =
     """
       |object |NAME| /* mixins: |MIXINS|*/{
       |
@@ -33,7 +31,7 @@ object Template {
       |    .render((P, C, S, B) => {
     """.stripMargin
 
-  val renderEnd=
+  val renderEnd =
     """
       |  }
       |    )
@@ -41,17 +39,17 @@ object Template {
     """.stripMargin
 
 
-//    def render(reactClass:ReactClass):String={
-//      val code=new ListBuffer[String]()
-//      code +=header
-//      code +=classHeader.replace("|NAME|", reactClass.displayName).replace("|MIXINS|", reactClass.mixins.mkString(" with "))
-//      code += reactClass.renderCode
-//      code += renderEnd
-//      code += reactClass.extraCode
-//      code += reactClass.propertiesCode
-//      code += reactClass.applyCode
-//      code += "\n}\n"
-//
-//      code.mkString("")
-//    }
+  //    def render(reactClass:ReactClass):String={
+  //      val code=new ListBuffer[String]()
+  //      code +=header
+  //      code +=classHeader.replace("|NAME|", reactClass.displayName).replace("|MIXINS|", reactClass.mixins.mkString(" with "))
+  //      code += reactClass.renderCode
+  //      code += renderEnd
+  //      code += reactClass.extraCode
+  //      code += reactClass.propertiesCode
+  //      code += reactClass.applyCode
+  //      code += "\n}\n"
+  //
+  //      code.mkString("")
+  //    }
 }

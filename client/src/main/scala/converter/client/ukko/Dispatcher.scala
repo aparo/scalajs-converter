@@ -1,4 +1,4 @@
-package spatutorial.client.ukko
+package converter.client.ukko
 
 import scala.collection.immutable.Queue
 

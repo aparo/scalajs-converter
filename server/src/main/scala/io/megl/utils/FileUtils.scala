@@ -61,7 +61,7 @@ object Test extends App {
 
 object FileUtils {
   val logger = Logger("utils.fileutils")
-  implicit private val codec = Codec.UTF8
+//  implicit private val codec = Codec.UTF8
 
   //
   //  def readResource(name: String, encoding:String="utf8"): Option[String] = {

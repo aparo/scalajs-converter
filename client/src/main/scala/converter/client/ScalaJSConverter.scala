@@ -1,22 +1,28 @@
 package converter.client
 
+import converter.client.components.GlobalStyles
 import converter.client.modules.MainRouter
-import japgolly.scalajs.react.React
-import japgolly.scalajs.react.extra.router.BaseUrl
+import japgolly.scalajs.react.extra.router.Router
 import org.scalajs.dom
+import logger._
+import scalacss.ProdDefaults._
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSExport
+object ScalaJSConverter {
+  @JSExportTopLevel("ScalaJSConverter")
+  protected def getInstance(): this.type = this
 
-/**
- * Created by alberto on 09/03/15.
- */
-@JSExport("ScalaJSConverter")
-object ScalaJSConverter extends js.JSApp {
   @JSExport
   def main(): Unit = {
+    log.warn("Application starting")
 
+    import scalacss.ScalaCssReact._
+
+    GlobalStyles.addToDocument()
+
+    val router = Router(MainRouter.baseUrl, MainRouter.routerConfig)
     // tell React to render the router in the document body
-    React.render(MainRouter.routerComponent(), dom.document.body)
+    router().renderIntoDOM(dom.document.body)
+
   }
 }

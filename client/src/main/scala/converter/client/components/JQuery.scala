@@ -1,4 +1,4 @@
-package spatutorial.client.components
+package converter.client.components
 
 import org.scalajs.dom._
 
