@@ -5,9 +5,7 @@ import converter.client.services.AjaxClient
 import converter.shared.Api
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
-import boopickle._
-import boopickle.Default._
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
 object JSON2CC {
 

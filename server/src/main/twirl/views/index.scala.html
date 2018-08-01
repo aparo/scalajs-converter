@@ -6,12 +6,17 @@
         <meta charset="UTF-8">
         <title>@title</title>
         <meta content='width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no' name='viewport'>
-        <link rel="stylesheet" media="screen" href="@routes.Assets.at("/public","stylesheets/main.min.css")">
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("/public","images/favicon.png")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.png")">
     </head>
     <body>
         <div id="root">
         </div>
-        @scalajs.html.scripts("client", routes.Assets.versioned(_).toString, name => getClass.getResource(s"/public/$name") != null)
-    </body>
+
+        <script type="text/javascript" src="@routes.Assets.at("client-opt-library.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("client-opt-loader.js")"></script>
+        <script type="text/javascript" src="@routes.Assets.at("client-opt.js")"></script>
+
+
+            </body>
 </html>

@@ -1,18 +1,15 @@
 package controllers
 
-import java.nio.ByteBuffer
 
-import boopickle.Default._
 import converter.shared.Api
+import io.circe.Json
 import play.api.mvc._
 import services.ApiService
-
+import io.circe.Json
+import io.circe.java8.time.TimeInstances
+import io.circe.parser._
 import scala.concurrent.ExecutionContext.Implicits.global
-
-object Router extends autowire.Server[ByteBuffer, Pickler, Pickler] {
-  override def read[R: Pickler](p: ByteBuffer) = Unpickle[R].fromBytes(p)
-  override def write[R: Pickler](r: R) = Pickle.intoBytes(r)
-}
+import scala.concurrent.Future
 
 import javax.inject._
 
@@ -25,21 +22,23 @@ class Application @Inject() (cc: ControllerComponents)
     Ok(views.html.index("ScalaJS - Converter"))
   }
 
-  def autowireApi(path: String) = Action.async(parse.raw) {
+
+  private val procedureCallRouter: autowire.Core.Request[Json] => Future[Result] = AutoWireServer
+    .route[Api](apiService)(_)
+    .map(_.noSpaces).map(Ok(_))
+
+  def autowireApi(path: String) = Action.async(parse.byteString) {
     implicit request =>
       println(s"Request path: $path")
 
-      // get the request body as Array[Byte]
-      val b = request.body.asBytes(parse.UNLIMITED).get
-
-      // call Autowire route
-      Router.route[Api](apiService)(
-        autowire.Core.Request(path.split("/"), Unpickle[Map[String, ByteBuffer]].fromBytes(ByteBuffer.wrap(b.toArray)))
-      ).map(buffer => {
-        val data = Array.ofDim[Byte](buffer.remaining())
-        buffer.get(data)
-        Ok(data)
-      })
+      decode[Map[String, Json]](request.body.utf8String) match {
+        case Right(s) =>
+          val procedureCallRequest = autowire.Core.Request(path.split('/'), s)
+          procedureCallRouter(procedureCallRequest)
+        case Left(v) =>
+          println("Error" + v)
+          Future.successful(Ok("Request failed: " + v).as("application/json"))
+      }
   }
 
   def logging = Action(parse.anyContent) {

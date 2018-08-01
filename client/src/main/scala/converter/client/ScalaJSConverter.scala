@@ -1,12 +1,11 @@
 package converter.client
 
-import converter.client.components.GlobalStyles
+import converter.client.logger._
 import converter.client.modules.MainRouter
 import japgolly.scalajs.react.extra.router.Router
 import org.scalajs.dom
-import logger._
-import scalacss.ProdDefaults._
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+
+import scala.scalajs.js.annotation._
 
 object ScalaJSConverter {
   @JSExportTopLevel("ScalaJSConverter")
@@ -16,13 +15,11 @@ object ScalaJSConverter {
   def main(): Unit = {
     log.warn("Application starting")
 
-    import scalacss.ScalaCssReact._
-
-    GlobalStyles.addToDocument()
+    AppCSS.load()
 
     val router = Router(MainRouter.baseUrl, MainRouter.routerConfig)
     // tell React to render the router in the document body
-    router().renderIntoDOM(dom.document.body)
+    router().renderIntoDOM(dom.document.getElementById("root"))
 
   }
 }

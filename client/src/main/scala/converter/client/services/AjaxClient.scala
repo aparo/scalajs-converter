@@ -1,25 +1,41 @@
 package converter.client.services
 
-import java.nio.ByteBuffer
-
-import boopickle.Default._
+import io.circe.parser._
+import io.circe.syntax._
+import io.circe.{Decoder, Encoder, Json}
 import org.scalajs.dom
 
 import scala.concurrent.Future
-import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
-import scala.scalajs.js.typedarray._
+import scala.scalajs.concurrent.JSExecutionContext.Implicits.queue
 
-object AjaxClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
-  override def doCall(req: Request): Future[ByteBuffer] = {
-    // Scala.js DOM 0.8.1 supports binary data, earlier versions don't
+
+class AjaxClient extends autowire.Client[Json, Decoder, Encoder] {
+
+  override def doCall(req: Request): Future[Json] = {
     dom.ext.Ajax.post(
       url = "/api/" + req.path.mkString("/"),
-      data = Pickle.intoBytes(req.args),
-      responseType = "arraybuffer",
-      headers = Map("Content-Type" -> "application/octet-stream")
-    ).map(r => TypedArrayBuffer.wrap(r.response.asInstanceOf[ArrayBuffer]))
+      data = {
+        val d: String = Json.fromFields(req.args).noSpaces
+        d
+      }
+    ).map(r => {
+      parse(r.responseText).right.get
+    })
   }
 
-  override def read[Result: Pickler](p: ByteBuffer) = Unpickle[Result].fromBytes(p)
-  override def write[Result: Pickler](r: Result) = Pickle.intoBytes(r)
+  override def write[AnyClassToWrite: Encoder](obj: AnyClassToWrite): Json = {
+    val w = obj.asJson
+    w
+  }
+
+  override def read[AnyClassToRead: Decoder](json: Json): AnyClassToRead = {
+    val e = json.as[AnyClassToRead]
+    val r = e.right.get
+    r
+  }
+
+}
+
+object AjaxClient {
+  def apply[Trait] = new AjaxClient()[Trait]
 }
