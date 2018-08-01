@@ -13,7 +13,7 @@ object Template {
       |import japgolly.scalajs.react._
       |
       |import scala.scalajs.js
-      |import japgolly.scalajs.react.vdom.prefix_<^._
+      |import japgolly.scalajs.react.vdom.html_<^._
       |
       |
     """.stripMargin
@@ -27,7 +27,7 @@ object Template {
       |  class Backend(t: BackendScope[Props, State]) {
       |  }
       |
-      |  val component = ReactComponentB[Props]("|NAME|")
+      |  val component = ScalaComponent.builder[Props]("|NAME|")
       |    .initialState(State())
       |    .backend(new Backend(_))
       |    .render((P, C, S, B) => {

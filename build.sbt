@@ -1,14 +1,13 @@
 import sbt.Keys._
 import sbt.Project.projectToRef
+import sbtcrossproject.{crossProject, CrossType}
 
 // a special crossProject for configuring a JS/JVM/shared structure
-lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared"))
+lazy val shared = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file("shared"))
   .settings(
     scalaVersion := Settings.versions.scala,
     libraryDependencies ++= Settings.sharedDependencies.value
   )
-  // set up settings specific to the JS project
-  .jsConfigure(_ enablePlugins ScalaJSPlay)
 
 lazy val sharedJVM = shared.jvm.settings(name := "sharedJVM")
 
@@ -23,23 +22,23 @@ lazy val client: Project = (project in file("client"))
     name := "client",
     version := Settings.version,
     scalaVersion := Settings.versions.scala,
-    scalacOptions ++= Settings.scalacOptions,
+    scalacOptions ++= Settings.scalacOptions ++ Seq("-P:scalajs:suppressExportDeprecations"),
     libraryDependencies ++= Settings.scalajsDependencies.value,
     // by default we do development build, no eliding
     elideOptions := Seq(),
     scalacOptions ++= elideOptions.value,
     jsDependencies ++= Settings.jsDependencies.value,
     // RuntimeDOM is needed for tests
-    jsDependencies += RuntimeDOM % "test",
+    jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv,
     // yes, we want to package JS dependencies
     skip in packageJSDependencies := false,
     // use Scala.js provided launcher code to start the client app
-    persistLauncher := true,
-    persistLauncher in Test := false,
+    scalaJSUseMainModuleInitializer := true,
+    scalaJSUseMainModuleInitializer in Test := false,
     // use uTest framework for tests
     testFrameworks += new TestFramework("utest.runner.Framework")
   )
-  .enablePlugins(ScalaJSPlugin, ScalaJSPlay)
+  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
   .dependsOn(sharedJS)
 
 // Client projects (just one in this case)
@@ -53,6 +52,7 @@ lazy val server = (project in file("server"))
     scalaVersion := Settings.versions.scala,
     scalacOptions ++= Settings.scalacOptions,
     libraryDependencies ++= Settings.jvmDependencies.value,
+      libraryDependencies += guice,
     commands += ReleaseCmd,
     // connect to the client project
     scalaJSProjects := clients,

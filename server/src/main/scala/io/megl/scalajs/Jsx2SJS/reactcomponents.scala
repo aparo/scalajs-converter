@@ -166,7 +166,7 @@ case class ReactProperty(name: String, `type`: String, default: Option[String] =
 //    validProps += "key: js.Any = {}"
 //    code += validProps.grouped(3).map(_.mkString(", ")).mkString(",\n  ")+")"
 //    if (this.hasChildren)
-//      code += "(children: ReactNode*)"
+//      code += "(children: VdomNode*)"
 //    code += "= {\n"
 //    code += "   component.set(key, ref)(Props("
 //    val signatures = new ListBuffer[String]()
@@ -194,12 +194,12 @@ case class ReactProperty(name: String, `type`: String, default: Option[String] =
 //              block: Boolean,
 //              navItem: Boolean,
 //              navDropdown: Boolean,
-//              componentClass: ReactNode = null,
+//              componentClass: VdomNode = null,
 //              href: String = "",
 //              target: String = "",
 //              className: String = "",
 //              bsClass: String = "", bsStyle: String = "", bsSize: String = "",
-//              ref: js.UndefOr[String] = "", key: js.Any = {})(children: ReactNode*) = {
+//              ref: js.UndefOr[String] = "", key: js.Any = {})(children: VdomNode*) = {
 //      component.set(key, ref)(Props(active = active, disabled = disabled, block = block,
 //        navItem = navItem, navDropdown = navDropdown,
 //        componentClass = componentClass, href = href, target = target, className = className,

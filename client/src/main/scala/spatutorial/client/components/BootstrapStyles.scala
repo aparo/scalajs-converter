@@ -1,18 +1,23 @@
 package spatutorial.client.components
 
-import scalacss.Defaults._
-import scalacss.mutable
+import japgolly.univeq.UnivEq
+import spatutorial.client.components.Bootstrap.CommonStyle
+
+import spatutorial.client.CssSettings._
+import scalacss.internal.mutable
 import spatutorial.client.components.Bootstrap.CommonStyle._
 
 class BootstrapStyles(implicit r: mutable.Register) extends StyleSheet.Inline()(r) {
 
   import dsl._
 
+  implicit val styleUnivEq: UnivEq[CommonStyle.Value] = new UnivEq[CommonStyle.Value] {}
+
   val csDomain = Domain.ofValues(default, primary, success, info, warning, danger)
 
   val contextDomain = Domain.ofValues(success, info, warning, danger)
 
-  def commonStyle[A](domain: Domain[A], base: String) = styleF(domain)(opt =>
+  def commonStyle[A: UnivEq](domain: Domain[A], base: String) = styleF(domain)(opt =>
     styleS(addClassNames(base, s"$base-$opt"))
   )
 
@@ -36,6 +41,7 @@ class BootstrapStyles(implicit r: mutable.Register) extends StyleSheet.Inline()(
 
   val panelBody = styleWrap("panel-body")
 
+  // wrap styles in a namespace, assign to val to prevent lazy initialization
   object modal {
     val modal = styleWrap("modal")
     val fade = styleWrap("fade")
@@ -46,12 +52,15 @@ class BootstrapStyles(implicit r: mutable.Register) extends StyleSheet.Inline()(
     val footer = styleWrap("modal-footer")
   }
 
+  val _modal = modal
+
   object listGroup {
     val listGroup = styleWrap("list-group")
     val item = styleWrap("list-group-item")
     val itemOpt = commonStyle(contextDomain, "list-group-item")
   }
 
+  val _listGroup = listGroup
   val pullRight = styleWrap("pull-right")
   val buttonXS = styleWrap("btn-xs")
   val close = styleWrap("close")

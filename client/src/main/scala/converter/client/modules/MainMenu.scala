@@ -1,7 +1,7 @@
 package converter.client.modules
 
 import japgolly.scalajs.react._
-import japgolly.scalajs.react.vdom.prefix_<^._
+import japgolly.scalajs.react.vdom.html_<^._
 import spatutorial.client.components.Icon.Icon
 import spatutorial.client.components._
 
@@ -12,7 +12,7 @@ object MainMenu {
     MenuItem(_ => "JSON 2 CaseClass", Icon.rotateRight, MainRouter.json2ccLoc)
 
   )
-  private val MainMenu = ReactComponentB[Props]("MainMenu")
+  private val MainMenu = ScalaComponent.builder[Props]("MainMenu")
     .stateless
     .render((P, _, B) => {
       <.ul(^.className := "nav navbar-nav")(
@@ -30,5 +30,5 @@ object MainMenu {
 
   case class Props(activeLocation: MainRouter.Loc, router: MainRouter.Router)
 
-  case class MenuItem(label: (Props) => ReactNode, icon: Icon, location: MainRouter.Loc)
+  case class MenuItem(label: (Props) => VdomNode, icon: Icon, location: MainRouter.Loc)
 }

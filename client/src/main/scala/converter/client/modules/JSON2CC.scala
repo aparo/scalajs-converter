@@ -4,7 +4,7 @@ import autowire._
 import converter.client.services.AjaxClient
 import converter.shared.Api
 import japgolly.scalajs.react._
-import japgolly.scalajs.react.vdom.prefix_<^._
+import japgolly.scalajs.react.vdom.html_<^._
 
 import scala.scalajs.concurrent.JSExecutionContext.Implicits.runNow
 import boopickle.Default._
@@ -12,11 +12,11 @@ import boopickle.Default._
 object JSON2CC {
 
   class Backend(t: BackendScope[MainRouter.Router, State]) {
-    def changedJSON(event: ReactEventI): Unit = {
+    def changedJSON(event: ReactEventFromInput): Unit = {
       t.modState(_.copy(jsonCode = event.currentTarget.value))
     }
 
-    def changedRootClassName(event: ReactEventI): Unit = {
+    def changedRootClassName(event: ReactEventFromInput): Unit = {
       t.modState(_.copy(rootClassName = event.currentTarget.value))
     }
 
@@ -31,7 +31,7 @@ object JSON2CC {
   case class State(rootClassName: String = "RootClassName", jsonCode: String = "", ccCode: String = "")
 
   // create the React component for Dashboard
-  val component = ReactComponentB[MainRouter.Router]("HTML 2 VDOM")
+  val component = ScalaComponent.builder[MainRouter.Router]("HTML 2 VDOM")
     .initialState(State())
     .backend(new Backend(_))
     .render((router, S, B) => {

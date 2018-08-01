@@ -1,7 +1,6 @@
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
-import play.sbt.Play
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
 import sbt._
-
+import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
 /**
  * Application settings. Configure the build for your application here.
  * You normally don't have to touch the actual build definition after this.
@@ -31,20 +30,19 @@ object Settings {
    */
   val sharedDependencies = Def.setting(Seq(
     "com.lihaoyi" %%% "autowire" % versions.autowire,
-    "me.chrons" %%% "boopickle" % versions.booPickle,
+    "io.suzaku" %% "boopickle" % versions.booPickle,
     "com.lihaoyi" %%% "utest" % versions.uTest
   ))
   /** Dependencies only used by the JVM project */
   val jvmDependencies = Def.setting(Seq(
-    "com.google.guava" % "guava" % "18.0",
-    Play.autoImport.json,
-    "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.10",
-    "org.mozilla" % "rhino" % "1.7R4",
-    "org.scala-lang.modules" %% "scala-xml" % "1.0.3",
-    "org.specs2" %% "specs2" % "2.3.13" % "test",
-    "com.vmunier" %% "play-scalajs-scripts" % versions.playScripts,
+    "com.google.guava" % "guava" % "23.0",
+    "com.typesafe.play" %% "play-json" % "2.6.9",
+    "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.22",
+    "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
+//    "org.specs2" %% "specs2" % "3.8.9" % Test,
+    "com.vmunier" %% "scalajs-scripts" % "1.1.2",
     "org.mozilla" % "rhino" % versions.rhino,
-    "org.webjars" % "font-awesome" % "4.3.0-1" % Provided,
+    "org.webjars" % "font-awesome" % "4.7.0" % Provided,
     "org.webjars" % "bootstrap" % versions.bootstrap % Provided
   ))
   /** Dependencies only used by the JS project (note the use of %%% instead of %%) */
@@ -66,22 +64,22 @@ object Settings {
 
   /** Declare global dependency versions here to avoid mismatches in multi part dependencies */
   object versions {
-    val scala = "2.11.7"
-    val scalaDom = "0.8.1"
-    val scalajsReact = "0.9.1"
-    val scalaCSS = "0.3.0"
-    val scalaRx = "0.2.8"
+    val scala = "2.12.6"
+    val scalaDom = "0.9.6"
+    val scalajsReact = "1.2.3"
+    val scalaCSS = "0.5.5"
+    val scalaRx = "0.3.2"
     val log4js = "1.4.10"
-    val autowire = "0.2.5"
-    val booPickle = "1.1.0"
-    val uTest = "0.3.1"
+    val autowire = "0.2.6"
+    val booPickle = "1.3.0"
+    val uTest = "0.6.3"
 
-    val react = "0.12.2"
+    val react = "16.3.2"
     val jQuery = "1.11.1"
-    val bootstrap = "3.3.2"
-    val chartjs = "1.0.1"
-    val rhino = "1.7.7"
+    val bootstrap = "3.3.7"
+    val chartjs = "1.0.2"
+    val rhino = "1.7.10"
 
-    val playScripts = "0.3.0"
+    val playScripts = "0.5.0"
   }
 }
