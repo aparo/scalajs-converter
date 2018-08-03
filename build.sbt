@@ -64,6 +64,16 @@ lazy val client: Project = (project in file("client"))
 // Client projects (just one in this case)
 lazy val clients = Seq(client)
 
+lazy val converterLibrary = (project in file("html2sjs"))
+  .settings(
+    name := "html2sjs",
+    version := Settings.version,
+    scalaVersion := Settings.versions.scala,
+    scalacOptions ++= Settings.scalacOptions,
+    libraryDependencies ++= Settings.jvmLibraryDependencies.value,
+  )
+  .dependsOn(sharedJVM)
+
 // instantiate the JVM project for SBT with some additional settings
 lazy val server = (project in file("server"))
   .settings(
@@ -86,7 +96,7 @@ lazy val server = (project in file("server"))
   .enablePlugins(WebScalaJSBundlerPlugin)
   .disablePlugins(PlayLayoutPlugin) // use the standard directory layout instead of Play's custom
   .aggregate(clients.map(projectToRef): _*)
-  .dependsOn(sharedJVM)
+  .dependsOn(converterLibrary)
 
 // Command for building a release
 lazy val ReleaseCmd = Command.command("release") {

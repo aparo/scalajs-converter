@@ -36,18 +36,24 @@ object Settings {
     "io.circe" %%% "circe-java8" % versions.circe,
     "com.lihaoyi" %%% "utest" % versions.uTest
   ))
+
+
+
   /** Dependencies only used by the JVM project */
   val jvmDependencies = Def.setting(Seq(
+//    "org.specs2" %% "specs2" % "3.8.9" % Test,
+    "com.vmunier" %% "scalajs-scripts" % "1.1.2"
+  ))
+
+  val jvmLibraryDependencies = Def.setting(Seq(
     "com.google.guava" % "guava" % "23.0",
+    "com.github.pathikrit"  %% "better-files"  % "3.6.0",
     "com.typesafe.play" %% "play-json" % "2.6.9",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.22",
     "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
-//    "org.specs2" %% "specs2" % "3.8.9" % Test,
-    "com.vmunier" %% "scalajs-scripts" % "1.1.2",
-    "org.mozilla" % "rhino" % versions.rhino//,
-//    "org.webjars" % "font-awesome" % "4.7.0",
-//    "org.webjars" % "bootstrap" % versions.bootstrap
+    "org.mozilla" % "rhino" % versions.rhino
   ))
+
   /** Dependencies only used by the JS project (note the use of %%% instead of %%) */
   val scalajsDependencies = Def.setting(Seq(
     "com.github.japgolly.scalajs-react" %%% "core" % versions.scalajsReact,
@@ -57,13 +63,13 @@ object Settings {
     "com.lihaoyi" %%% "scalarx" % versions.scalaRx
   ))
   /** Dependencies for external JS libs that are bundled into a single .js file according to dependency order */
-  val jsDependencies = Def.setting(Seq(
-    "org.webjars" % "react" % versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
-    "org.webjars" % "jquery" % versions.jQuery / "jquery.js" minified "jquery.min.js",
-    "org.webjars" % "bootstrap" % versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
-    "org.webjars" % "chartjs" % versions.chartjs / "Chart.js" minified "Chart.min.js",
-    "org.webjars" % "log4javascript" % versions.log4js / "js/log4javascript_uncompressed.js" minified "js/log4javascript.js"
-  ))
+//  val jsDependencies = Def.setting(Seq(
+//    "org.webjars" % "react" % versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
+//    "org.webjars" % "jquery" % versions.jQuery / "jquery.js" minified "jquery.min.js",
+//    "org.webjars" % "bootstrap" % versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
+//    "org.webjars" % "chartjs" % versions.chartjs / "Chart.js" minified "Chart.min.js",
+//    "org.webjars" % "log4javascript" % versions.log4js / "js/log4javascript_uncompressed.js" minified "js/log4javascript.js"
+//  ))
 
   import versions._
   val clientNpmDependences = Seq(

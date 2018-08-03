@@ -11,10 +11,12 @@ object JSON2CC {
 
   class Backend(t: BackendScope[Unit, State]) {
     def changedJSON(event: ReactEventFromInput) = {
+      event.persist()
       t.modState(_.copy(jsonCode = event.currentTarget.value))
     }
 
     def changedRootClassName(event: ReactEventFromInput) = {
+      event.persist()
       t.modState(_.copy(rootClassName = event.currentTarget.value))
     }
 

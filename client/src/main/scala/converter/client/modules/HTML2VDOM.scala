@@ -11,7 +11,8 @@ object HTML2VDOM {
 
   class Backend(t: BackendScope[Unit, State]) {
     def changedHTML(event: ReactEventFromInput) = {
-      t.modState(_.copy(htmlCode = event.currentTarget.value))
+      event.persist()
+      t.modState(_.copy(htmlCode = event.target.value))
     }
 
     def onClick(event: ReactEvent) = {
