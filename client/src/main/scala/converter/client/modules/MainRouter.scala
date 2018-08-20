@@ -21,24 +21,10 @@ object MainRouter {
       )
       .notFound(_ => redirectToPage(Home)(Redirect.Push))
       .setTitle(p => s"PAGE = $p | Example App")
+      .renderWith(layout)
       .onPostRender((prev, cur) =>
         Callback.log(s"Page changing from $prev to $cur."))
   }
-
-//  // register the modules and store locations
-//  val html2vdomLoc = register(rootLocation(HTML2VDOM.component))
-//  val json2ccLoc = register(location("#json2cc", JSON2CC.component))
-//  val changeLogLoc = register(location("#changeLog", ChangeLog.component))
-//
-//  def dashboard(content: TagMod*) = router.link(html2vdomLoc)(content)
-//
-//  // initialize router and its React component
-//  val router = routingEngine(baseUrl)
-//  val routerComponent = Router.component(router)
-//
-//
-//  // redirect all invalid routes to dashboard
-//  override protected val notFound = redirect(html2vdomLoc, Redirect.Replace)
 
   /**
    * Creates the basic page structure under the body tag.

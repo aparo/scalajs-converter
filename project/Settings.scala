@@ -51,7 +51,8 @@ object Settings {
     "com.typesafe.play" %% "play-json" % "2.6.9",
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.22",
     "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
-    "org.mozilla" % "rhino" % versions.rhino
+    "org.mozilla" % "rhino" % versions.rhino,
+    "org.scalatest" %% "scalatest" % "3.0.5" % "test"
   ))
 
   /** Dependencies only used by the JS project (note the use of %%% instead of %%) */

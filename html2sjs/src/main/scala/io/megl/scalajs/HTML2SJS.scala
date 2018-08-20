@@ -3,12 +3,14 @@ package io.megl.scalajs
 import com.google.common.base.CaseFormat
 import org.htmlcleaner._
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.io.Source
 import scala.xml.pull._
 import better.files._
 
-object HTML2SJS {
+import scala.xml.{Node, XML}
+
+object HTML2SJS extends  ConversionUtils {
 
   def main(argv: Array[String]): Unit = {
     val destination=File("/tmp/html2sjs")
@@ -28,110 +30,6 @@ object HTML2SJS {
         }
 
     }
-
-//    val html =
-//      """					<div class="profile-sidebar">
-//        |						<!-- PORTLET MAIN -->
-//        |						<div class="portlet light profile-sidebar-portlet">
-//        |							<!-- SIDEBAR USERPIC -->
-//        |							<div class="profile-userpic">
-//        |								<img src="../../assets/admin/pages/media/profile/profile_user.jpg" class="img-responsive" alt="">
-//        |							</div>
-//        |							<!-- END SIDEBAR USERPIC -->
-//        |							<!-- SIDEBAR USER TITLE -->
-//        |							<div class="profile-usertitle">
-//        |								<div class="profile-usertitle-name">
-//        |									 Marcus Doe
-//        |								</div>
-//        |								<div class="profile-usertitle-job">
-//        |									 Developer
-//        |								</div>
-//        |							</div>
-//        |							<!-- END SIDEBAR USER TITLE -->
-//        |							<!-- SIDEBAR BUTTONS -->
-//        |							<div class="profile-userbuttons">
-//        |								<button type="button" class="btn btn-circle green-haze btn-sm">Follow</button>
-//        |								<button type="button" class="btn btn-circle btn-danger btn-sm">Message</button>
-//        |							</div>
-//        |							<!-- END SIDEBAR BUTTONS -->
-//        |							<!-- SIDEBAR MENU -->
-//        |							<div class="profile-usermenu">
-//        |								<ul class="nav">
-//        |									<li class="active">
-//        |										<a href="extra_profile.html">
-//        |										<i class="icon-home"></i>
-//        |										Overview </a>
-//        |									</li>
-//        |									<li>
-//        |										<a href="extra_profile_account.html">
-//        |										<i class="icon-settings"></i>
-//        |										Account Settings </a>
-//        |									</li>
-//        |									<li>
-//        |										<a href="page_todo.html" target="_blank">
-//        |										<i class="icon-check"></i>
-//        |										Tasks </a>
-//        |									</li>
-//        |									<li>
-//        |										<a href="extra_profile_help.html">
-//        |										<i class="icon-info"></i>
-//        |										Help </a>
-//        |									</li>
-//        |								</ul>
-//        |							</div>
-//        |							<!-- END MENU -->
-//        |						</div>
-//        |						<!-- END PORTLET MAIN -->
-//        |						<!-- PORTLET MAIN -->
-//        |						<div class="portlet light">
-//        |							<!-- STAT -->
-//        |							<div class="row list-separated profile-stat">
-//        |								<div class="col-md-4 col-sm-4 col-xs-6">
-//        |									<div class="uppercase profile-stat-title">
-//        |										 37
-//        |									</div>
-//        |									<div class="uppercase profile-stat-text">
-//        |										 Projects
-//        |									</div>
-//        |								</div>
-//        |								<div class="col-md-4 col-sm-4 col-xs-6">
-//        |									<div class="uppercase profile-stat-title">
-//        |										 51
-//        |									</div>
-//        |									<div class="uppercase profile-stat-text">
-//        |										 Tasks
-//        |									</div>
-//        |								</div>
-//        |								<div class="col-md-4 col-sm-4 col-xs-6">
-//        |									<div class="uppercase profile-stat-title">
-//        |										 61
-//        |									</div>
-//        |									<div class="uppercase profile-stat-text">
-//        |										 Uploads
-//        |									</div>
-//        |								</div>
-//        |							</div>
-//        |							<!-- END STAT -->
-//        |							<div>
-//        |								<h4 class="profile-desc-title">About Marcus Doe</h4>
-//        |								<span class="profile-desc-text"> Lorem ipsum dolor sit amet diam nonummy nibh dolore. </span>
-//        |								<div class="margin-top-20 profile-desc-link">
-//        |									<i class="fa fa-globe"></i>
-//        |									<a href="http://www.keenthemes.com">www.keenthemes.com</a>
-//        |								</div>
-//        |								<div class="margin-top-20 profile-desc-link">
-//        |									<i class="fa fa-twitter"></i>
-//        |									<a href="http://www.twitter.com/keenthemes/">@keenthemes</a>
-//        |								</div>
-//        |								<div class="margin-top-20 profile-desc-link">
-//        |									<i class="fa fa-facebook"></i>
-//        |									<a href="http://www.facebook.com/keenthemes/">keenthemes</a>
-//        |								</div>
-//        |							</div>
-//        |       						</div>
-//        |						</div>""".stripMargin('|')
-//
-//    println(processString(html))
   }
 
   private def processFile(srcFile:File, destDir:File): Unit ={
@@ -141,7 +39,107 @@ object HTML2SJS {
     destFilename.write(result)
   }
 
+
   def processString(htmlCode: String, option: HTMLOptions = HTMLOptions()): String = {
+
+
+    val xml = XML.loadString(convertToXML(htmlCode))
+
+    def processNode(node:Node, ident:Int, prevLabel:String=""):String={
+      val data=new ListBuffer[String]()
+
+      val label=node.label
+      val disableIdent=DISABLE_IDENT_TAGS.contains(label)
+      var prefix=""
+      if(!disableIdent && ident>0) {
+        prefix="  "*ident
+//        data += prefix
+      }
+      label match {
+        case "#PCDATA" =>
+          val realText=node.text.replace("\n\t\n", "")
+          if(realText.trim.nonEmpty){
+
+            if(option.i18n)
+              data += s"""i18n(${validateI18n(realText)})"""
+            else data += realText
+
+          }
+          val nodeMerger=if(disableIdent) ", " else ",\n"
+
+          data += node.child
+            .map(c => prefix+processNode(c, ident+ 1, prevLabel=label)).filter(_.nonEmpty).mkString(nodeMerger)
+
+        case _ =>
+          if(!DISABLE_IDENT_TAGS.contains(prevLabel)) data += "\n"+"  "*ident
+          data += s"$prefix<.$label("
+          val aPrefix=""
+          val attributes = node.attributes.asAttrMap.flatten {
+            case (name, value) =>
+              name match {
+                case "class" =>
+                  List(aPrefix + s"""^.cls := \"$value\"""")
+                case "type" =>
+                  List(aPrefix + s"""^.tpe := \"$value\"""")
+                case "style" =>
+                  value.split(";").map(_.trim).filter(_.nonEmpty).map {
+                    st =>
+                      val tokens = st.split(":").map(_.trim)
+                      aPrefix + s"""^.style.${convertCase(tokens(0))} := \"${tokens.drop(1).mkString(" ")}\""""
+                  }
+                case s: String if s.startsWith("data-") =>
+                  List(aPrefix + s"""VdomAttr("$s") := \"$value\"""")
+                case s: String if s.startsWith("aria-") =>
+                  List(aPrefix + s"""^.aria.${convertCase(s.replace("aria-", "")).toLowerCase()} := \"$value\"""")
+                case default =>
+                  List(aPrefix + s"""^.$default := \"$value\"""")
+              }
+          }.filter(_.nonEmpty)
+          if (attributes.nonEmpty) {
+            data += attributes.mkString(", ")
+          }
+
+          val nodeMerger=if(disableIdent) ", " else ","
+
+          val childrenNodes=node.child
+            .map{c =>
+              val result=processNode(c, ident+ 1, prevLabel=label)
+              if(result.startsWith("i18n")|| result.startsWith("\"")) result
+              else prefix+result
+            }.filter(_.trim.nonEmpty)
+          if(childrenNodes.nonEmpty){
+            if(attributes.nonEmpty)
+              data +=", "
+
+            data += childrenNodes.mkString(nodeMerger)
+
+          }
+
+          data += ")"
+      }
+
+
+      data.filter(_.nonEmpty).mkString
+    }
+
+
+
+
+    val fontAwesome = """<\.i\(\^\.cls := "fa fa-(.*?)"\)""".r
+
+    var text = processNode(xml, 0).trim
+    println(text)
+    text = fontAwesome.replaceAllIn(text, m => s"FontAwesome.${m.group(1).replace("-o", "O")}")
+    text = text.substring(0, text.trim().length - 2)
+
+    val body = "<.body("
+    text = text.substring(text.indexOf(body) + body.length).trim
+
+    text
+  }
+
+
+  def processStringPull(htmlCode: String, option: HTMLOptions = HTMLOptions()): String = {
 
 
     val xml = new XMLEventReader(Source.fromString(convertToXML(htmlCode)))
@@ -149,15 +147,17 @@ object HTML2SJS {
     var level = 0
     val elementStack = new scala.collection.mutable.Stack[Int]
     val tagStack = new scala.collection.mutable.Stack[String]
-    var disableIdent = false
+    val disableIdentStack = new scala.collection.mutable.Stack[Boolean]
     val buf = ArrayBuffer[String]()
 
-    val DISABLE_IDENT_TAGS = Set("i", "span", "meta", "title", "option", "h1", "h2", "h3", "h4")
+    val DISABLE_IDENT_TAGS = Set("i", "b", "span", "meta", "title", "option", "h1", "h2", "h3", "h4", "h5", "h6", "h7")
     var prevTag = ""
 
     def convertCase(name: String) = {
       CaseFormat.LOWER_HYPHEN.to(CaseFormat.UPPER_UNDERSCORE, name)
     }
+
+
 
 
     for (event <- xml) {
@@ -171,8 +171,8 @@ object HTML2SJS {
           //            prefix = ", " + "\n" + prefix
 
           var postfix = "\n"
-          disableIdent = DISABLE_IDENT_TAGS.contains(label)
-          if (disableIdent)
+          disableIdentStack.push(DISABLE_IDENT_TAGS.contains(label))
+          if (disableIdentStack.head)
             postfix = ""
 
           val tag = prefix + s"<.$label(" + postfix
@@ -181,7 +181,7 @@ object HTML2SJS {
           elementStack.push(attrs.asAttrMap.size)
           tagStack.push(label)
           prefix = "  " * level
-          if (disableIdent)
+          if (disableIdentStack.head)
             prefix = ""
 
           val t = attrs.asAttrMap.flatten {
@@ -198,9 +198,9 @@ object HTML2SJS {
                       prefix + s"""^.style.${convertCase(tokens(0))} := \"${tokens.drop(1).mkString(" ")}\""""
                   }
                 case s: String if s.startsWith("data-") =>
-                  List(prefix + s"""Attr("$s") := \"$value\"""")
+                  List(prefix + s"""VdomAttr("$s") := \"$value\"""")
                 case s: String if s.startsWith("aria-") =>
-                  List(prefix + s"""^.aria.${convertCase(s.replace("aria-", ""))} := \"$value\"""")
+                  List(prefix + s"""^.aria.${convertCase(s.replace("aria-", "")).toLowerCase()} := \"$value\"""")
                 case default =>
                   List(prefix + s"""^.$default := \"$value\"""")
               }
@@ -209,19 +209,19 @@ object HTML2SJS {
             buf += t.mkString(",\n")
           }
 
-        case EvElemEnd(pre, label) => {
+        case EvElemEnd(pre, label) =>
           var prefix = ""
           var postfix = "\n"
           elementStack.pop()
           if (elementStack.nonEmpty && elementStack.top > 0) {
             prefix = "\n" + "  " * level
           }
-          if (disableIdent) {
+          if (disableIdentStack.head) {
             prefix = ""
           }
           prevTag = tagStack.pop()
           if (tagStack.nonEmpty) {
-            disableIdent = !DISABLE_IDENT_TAGS.contains(tagStack.top)
+            val disableIdent = disableIdentStack.pop()
             if (disableIdent) {
               postfix = ""
             }
@@ -230,7 +230,7 @@ object HTML2SJS {
           val tag = prefix + ")" + postfix
           buf += tag
           level -= 1
-        }
+
         //      case e @ EvElemStart(_, tag, _, _) => {
         //        if (insidePage) {
         //          buf += ("<" + tag + ">")
@@ -244,13 +244,15 @@ object HTML2SJS {
         case EvText(t) =>
           if (t.trim.nonEmpty) {
             var prefix = "  " * level
-            if (elementStack.nonEmpty && elementStack.top > 0) {
-              prefix = ", "
-            } else if (disableIdent) {
+            if (disableIdentStack.head) {
               prefix = ""
             }
+            if (elementStack.nonEmpty && elementStack.top > 0) {
+              prefix = ", "
+            }
+
             var postfix = "\n"
-            if (disableIdent) {
+            if (disableIdentStack.head) {
               postfix = ""
             }
 
@@ -280,7 +282,7 @@ object HTML2SJS {
       }
     }
     val noComma = """\)(\s*)<""".r
-    val fontAwesome = """<\.i\(\^\.cls := "fa fa-(.*)"\)""".r
+    val fontAwesome = """<\.i\(\^\.cls := "fa fa-(.*?)"\)""".r
 
     var text = buf.mkString.split('\n').filter(_.nonEmpty).mkString("\n")
     text = noComma.replaceAllIn(text, m => s"),\n${m.group(1)}<")
