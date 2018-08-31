@@ -1,15 +1,9 @@
 package io.megl.scalajs
 
-import io.megl.scalajs.HTML2SJS.{HTMLOptions, convertToXML}
+import io.megl.scalajs.HTML2SJS.{HTMLOptions, convertToXML, validateI18n}
 
+import scala.collection.mutable.ListBuffer
 import scala.xml.{Node, XML}
-
-case class HTMLNode(tag:String, attributes:Seq[(String,String)]=Nil,
-                    children:Seq[HTMLNode]=Nil, ident:Int=0, text:Option[String]=None) {
-  def isEmpty:Boolean=children.isEmpty && text.isEmpty && (tag!="#PCDATA") && attributes.isEmpty
-
-  def nonEmpty:Boolean = !isEmpty
-}
 
 
 class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) extends ConversionUtils {
@@ -21,18 +15,18 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
     val label = node.label
     label match {
       case "#PCDATA" =>
-        val realText = node.text.replace("\n\t\n", "")
+        val realText = node.text.replace("\n\t\n", " ").replace("\\s+", " ")
 
         val children= node.child
           .flatMap(c => processNode(c, ident + 1, prevLabel = label)).filter(_.nonEmpty)
 
         if(realText.trim.nonEmpty || children.nonEmpty) {
-          Some(HTMLNode("#PCDATA", children=children, ident=ident,
-            text = if(realText.isEmpty) None else Some(realText)))
+
+          Some(TextNode(realText, children=children))
         } else None
 
       case _ =>
-        val attributes = node.attributes.asAttrMap.flatten {
+        val attributes:Seq[(String,String)] = node.attributes.asAttrMap.flatten {
           case (name, value) =>
             name match {
               case "class" =>
@@ -47,6 +41,8 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
                 }
               case s: String if s.startsWith("data-") =>
                 List(s"""VdomAttr("$s")""" -> s"""\"$value\"""")
+              case s: String if s.startsWith("m-") =>
+                List(s"""VdomAttr("$s")""" -> s"""\"$value\"""")
               case s: String if s.startsWith("aria-") =>
                 List(s"""^.aria.${convertCase(s.replace("aria-", "")).toLowerCase()}""" -> s"""\"$value\"""")
               case default =>
@@ -59,9 +55,22 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
             processNode(c, ident + 1, prevLabel = label)
           }
 
-        Some(HTMLNode(label, children=children, attributes = attributes, ident=ident))
+        if(children.isEmpty){
+          // possible font=
+          if(label=="i" && attributes.exists( _._1 == "^.cls" )) {
+            val cls=attributes.find( _._1 == "^.cls" ).map(_._2).map(s=> s.substring(1, s.length-1).trim).getOrElse("").split(' ').filter(_.nonEmpty)
+            if(cls.contains("fa"))
+              return Some(FontAwesome(cls.toList))
+            else if(cls.contains("la"))
+              return Some(LineAwesome(cls.toList))
+            else if(cls.exists( _.startsWith("flaticon-") ))
+              return Some(LineAwesome(cls.toList))
+          }
+        }
+
+        Some(GenericHTMLNode(label, children=children, attributes = attributes, ident=ident))
     }
   }
 
-  def body:Seq[HTMLNode]=root.get.children.filter(_.tag=="body").flatten(_.children)
+  def body:HTMLNode=root.get.children.filter(_.tag=="body").flatten(_.children).head
 }

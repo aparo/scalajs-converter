@@ -14,6 +14,7 @@ object Settings {
 
   /** Options for the scala compiler */
   val scalacOptions = Seq(
+    " -language:postfixOps",
     "-Xlint",
     "-unchecked",
     "-deprecation",
@@ -40,10 +41,6 @@ object Settings {
 
 
   /** Dependencies only used by the JVM project */
-  val jvmDependencies = Def.setting(Seq(
-//    "org.specs2" %% "specs2" % "3.8.9" % Test,
-    "com.vmunier" %% "scalajs-scripts" % "1.1.2"
-  ))
 
   val jvmLibraryDependencies = Def.setting(Seq(
     "com.google.guava" % "guava" % "23.0",
@@ -52,8 +49,22 @@ object Settings {
     "net.sourceforge.htmlcleaner" % "htmlcleaner" % "2.22",
     "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
     "org.mozilla" % "rhino" % versions.rhino,
+    "com.geirsson" %% "scalafmt-core" % "1.5.1",
     "org.scalatest" %% "scalatest" % "3.0.5" % "test"
   ))
+
+
+  val serverDependencies = Def.setting(Seq(
+    "com.vmunier" %% "scalajs-scripts" % "1.1.2",
+  // "com.github.cornerman" %%% "covenant-ws" % "0.1.0",
+  // "com.github.cornerman" %%% "covenant-http" % "0.1.0",
+    "ch.megard" %% "akka-http-cors" % "0.3.0",
+    "de.heikoseeberger" %% "akka-http-circe" % "1.21.0",
+    "io.suzaku" %%% "boopickle" % "1.3.0",
+    "org.typelevel" %%% "kittens" % "1.1.1"
+
+  ))
+
 
   /** Dependencies only used by the JS project (note the use of %%% instead of %%) */
   val scalajsDependencies = Def.setting(Seq(
@@ -113,7 +124,7 @@ object Settings {
     val log4Javascript = "1.4.15"
     val reactHandsontable = "0.3.1"
     val scalaCSS = "0.5.5"
-    val scalaRx = "0.3.2"
+    val scalaRx = "0.4.0"
     val log4js = "1.4.10"
     val autowire = "0.2.6"
     val booPickle = "1.3.0"

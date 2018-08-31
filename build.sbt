@@ -81,7 +81,7 @@ lazy val server = (project in file("server"))
     version := Settings.version,
     scalaVersion := Settings.versions.scala,
     scalacOptions ++= Settings.scalacOptions,
-    libraryDependencies ++= Settings.jvmDependencies.value,
+    libraryDependencies ++= Settings.serverDependencies.value,
       libraryDependencies += guice,
     commands += ReleaseCmd,
     // connect to the client project

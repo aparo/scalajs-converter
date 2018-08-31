@@ -1,6 +1,5 @@
 package io.megl.scalajs
 
-import collection.mutable.Stack
 import org.scalatest._
 
 class Html2sjsSpec extends FlatSpec with Matchers {
@@ -12,10 +11,10 @@ class Html2sjsSpec extends FlatSpec with Matchers {
     result should be ("""<.h1(FontAwesome.home, i18n("User Interface Kit"))""")
   }
 
-  it should "throw NoSuchElementException if an empty stack is popped" in {
-    val emptyStack = new Stack[Int]
-    a [NoSuchElementException] should be thrownBy {
-      emptyStack.pop()
-    }
-  }
+//  it should "throw NoSuchElementException if an empty stack is popped" in {
+  //    val emptyStack = new Stack[Int]
+  //    a [NoSuchElementException] should be thrownBy {
+  //      emptyStack.pop()
+  //    }
+  //  }
 }

@@ -7,6 +7,7 @@ import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.io.Source
 import scala.xml.pull._
 import better.files._
+import io.megl.scalajs.HTML2SJS.HTMLOptions
 
 import scala.xml.{Node, XML}
 
@@ -41,6 +42,13 @@ object HTML2SJS extends  ConversionUtils {
 
 
   def processString(htmlCode: String, option: HTMLOptions = HTMLOptions()): String = {
+    val processor=new HtmlTreeProcessor(htmlCode, option)
+    org.scalafmt.Scalafmt.format(processor.root.get.render(option)).get
+
+  }
+
+
+  def processStringString(htmlCode: String, option: HTMLOptions = HTMLOptions()): String = {
 
 
     val xml = XML.loadString(convertToXML(htmlCode))
@@ -88,6 +96,8 @@ object HTML2SJS extends  ConversionUtils {
                       aPrefix + s"""^.style.${convertCase(tokens(0))} := \"${tokens.drop(1).mkString(" ")}\""""
                   }
                 case s: String if s.startsWith("data-") =>
+                  List(aPrefix + s"""VdomAttr("$s") := \"$value\"""")
+                case s: String if s.startsWith("m-") =>
                   List(aPrefix + s"""VdomAttr("$s") := \"$value\"""")
                 case s: String if s.startsWith("aria-") =>
                   List(aPrefix + s"""^.aria.${convertCase(s.replace("aria-", "")).toLowerCase()} := \"$value\"""")
