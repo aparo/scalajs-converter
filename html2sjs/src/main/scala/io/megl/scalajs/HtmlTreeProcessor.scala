@@ -63,8 +63,8 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
               return Some(FontAwesome(cls.toList))
             else if(cls.contains("la"))
               return Some(LineAwesome(cls.toList))
-            else if(cls.exists( _.startsWith("flaticon-") ))
-              return Some(LineAwesome(cls.toList))
+            else if(cls.exists( _.startsWith("flaticon-")))
+              return Some(FlatIcon(cls.toList))
           }
         }
 

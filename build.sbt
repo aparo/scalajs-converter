@@ -77,7 +77,7 @@ lazy val converterLibrary = (project in file("html2sjs"))
 // instantiate the JVM project for SBT with some additional settings
 lazy val server = (project in file("server"))
   .settings(
-    name := "server",
+    name := "scalajs-converter",
     version := Settings.version,
     scalaVersion := Settings.versions.scala,
     scalacOptions ++= Settings.scalacOptions,

@@ -14,7 +14,7 @@ object Settings {
 
   /** Options for the scala compiler */
   val scalacOptions = Seq(
-    " -language:postfixOps",
+    "-language:postfixOps",
     "-Xlint",
     "-unchecked",
     "-deprecation",

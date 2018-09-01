@@ -10,12 +10,8 @@ trait ConversionUtils {
   }
 
   def validateI18n(text:String):String={
-    var value=text.trim
-    if (value.contains("\n")) {
-      value = "\"" * 3 + value + "\"" * 3
-    } else {
-      value = "\"" + value + "\""
-    }
+    var value=text.trim.replace("\\s+",  " ").replace('\n', ' ')
+    value = "\"" * 3 + value + "\"" * 3
     value
   }
 

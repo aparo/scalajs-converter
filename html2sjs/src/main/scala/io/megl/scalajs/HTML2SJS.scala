@@ -43,7 +43,9 @@ object HTML2SJS extends  ConversionUtils {
 
   def processString(htmlCode: String, option: HTMLOptions = HTMLOptions()): String = {
     val processor=new HtmlTreeProcessor(htmlCode, option)
-    org.scalafmt.Scalafmt.format(processor.root.get.render(option)).get
+    val result=processor.root.get.render(option)
+    println(result)
+    org.scalafmt.Scalafmt.format("object Code {\n  def render: VdomElement = "+result+"\n }").get
 
   }
 

@@ -22,7 +22,7 @@ case class GenericHTMLNode(tag:String, attributes:Seq[(String,String)]=Nil,
     val result=new ListBuffer[String]()
     result +=s"<.$tag("
     result += (attributes.map(a => s"${a._1} := ${a._2}") ++  children.map(_.render(option))).mkString(", ")
-    result +=")"
+    result +=")\n"
     result.mkString("")
   }
 }
