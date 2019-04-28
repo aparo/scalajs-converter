@@ -15,16 +15,24 @@ object HTML2SJS extends  ConversionUtils {
 
   def main(argv: Array[String]): Unit = {
     val destination=File("/tmp/html2sjs")
-    if(!destination.exists) destination.toJava.mkdirs()
+    if(!destination.exists) destination.createDirectories()
     argv.foreach{
       entry=>
         val fileEntry=File(entry)
         if(fileEntry.isDirectory){
-          val dirDest=destination / fileEntry.name
-          if(!dirDest.exists) dirDest.toJava.mkdirs()
+          fileEntry.walk()
+//            .filter(_.name.endsWith("_layout.html"))
+            .foreach{
+              file =>
 
-          fileEntry.list.filter(_.name.toLowerCase.endsWith(".html"))
-            .foreach(f => processFile(f, dirDest))
+                processFile(file, file.parent)
+            }
+
+//          val dirDest=destination / fileEntry.name
+//          if(!dirDest.exists) dirDest.toJava.mkdirs()
+//
+//          fileEntry.list.filter(_.name.toLowerCase.endsWith(".html"))
+//            .foreach(f => processFile(f, dirDest))
 
         } else {
           processFile(fileEntry, destination)
@@ -34,18 +42,24 @@ object HTML2SJS extends  ConversionUtils {
   }
 
   private def processFile(srcFile:File, destDir:File): Unit ={
-    val destFilename=destDir / srcFile.name.replace(".html", ".scala")
-    println(s"Processing $srcFile $destFilename")
-    val result=processString(srcFile.contentAsString)
-    destFilename.write(result)
+    try{
+      val destFilename=destDir / (filenameToNode(srcFile.name)+ ".scala")
+      println(s"Processing $srcFile $destFilename")
+      val result=processString(srcFile.contentAsString, objectName=filenameToNode(srcFile.name))
+      destFilename.write(result)
+
+    } catch {
+      case ex:Throwable =>
+        println(ex)
+    }
   }
 
 
-  def processString(htmlCode: String, option: HTMLOptions = HTMLOptions()): String = {
+  def processString(htmlCode: String, option: HTMLOptions = HTMLOptions(), objectName:String="Code"): String = {
     val processor=new HtmlTreeProcessor(htmlCode, option)
     val result=processor.root.get.render(option)
     println(result)
-    org.scalafmt.Scalafmt.format("object Code {\n  def render: VdomElement = "+result+"\n }").get
+    org.scalafmt.Scalafmt.format(s"object $objectName {\n  def apply(): VdomElement = "+result+"\n }").get
 
   }
 

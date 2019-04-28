@@ -58,10 +58,10 @@ object Settings {
     "com.vmunier" %% "scalajs-scripts" % "1.1.2",
   // "com.github.cornerman" %%% "covenant-ws" % "0.1.0",
   // "com.github.cornerman" %%% "covenant-http" % "0.1.0",
-    "ch.megard" %% "akka-http-cors" % "0.3.0",
-    "de.heikoseeberger" %% "akka-http-circe" % "1.21.0",
+    "ch.megard" %% "akka-http-cors" % "0.4.0",
+    "de.heikoseeberger" %% "akka-http-circe" % "1.25.2",
     "io.suzaku" %%% "boopickle" % "1.3.0",
-    "org.typelevel" %%% "kittens" % "1.1.1"
+    "org.typelevel" %%% "kittens" % "1.2.1"
 
   ))
 
@@ -115,9 +115,9 @@ object Settings {
 
   /** Declare global dependency versions here to avoid mismatches in multi part dependencies */
   object versions {
-    val scala = "2.12.6"
-    val scalaDom = "0.9.6"
-    val scalajsReact = "1.2.3"
+    val scala = "2.12.8"
+    val scalaDom = "0.9.7"
+    val scalajsReact = "1.4.1"
     val scalajsReactComponents = "0.8.0"
     val reactTestUtils = "15.4.1"
     val exposeLoader = "0.7.1"

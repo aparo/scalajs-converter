@@ -8,11 +8,22 @@ import scala.xml.{Node, XML}
 
 class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) extends ConversionUtils {
 
-  val root = processNode(XML.loadString(convertToXML(htmlCode)),0)
+
+
+  val root = {
+    val xml=convertToXML(htmlCode)
+      .replace("<!--", "<comment>")
+      .replace("-->", "</comment>")
+    println(xml)
+    processNode(XML.loadString(xml),0)
+  }
+
+  private lazy val extractIncludeComment="""\[html-partial:include:\{"file":"(.*)"\}\]""".r
+
 
   private def processNode(node: Node, ident: Int, prevLabel: String = ""): Option[HTMLNode] = {
-
     val label = node.label
+//    println(label)
     label match {
       case "#PCDATA" =>
         val realText = node.text.replace("\n\t\n", " ").replace("\\s+", " ")
@@ -20,12 +31,25 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
         val children= node.child
           .flatMap(c => processNode(c, ident + 1, prevLabel = label)).filter(_.nonEmpty)
 
+
         if(realText.trim.nonEmpty || children.nonEmpty) {
 
           Some(TextNode(realText, children=children))
         } else None
-
+      case "comment" =>
+        val realText = node.text.replace("\n\t\n", " ").replace("\\s+", " ")
+        if(realText.trim.nonEmpty) {
+          val includes=extractIncludeComment.findAllIn(realText).matchData.map(_.group(1)).toList
+          if(includes.nonEmpty){
+            var entry=filenameToNode(includes.head)
+            Some(RawNode(entry+"()"))
+          } else {
+            Some(CommentNode(realText.trim))
+          }
+        } else None
       case _ =>
+        val realText = node.text.replace("\n\t\n", " ").replace("\\s+", " ")
+//        println(node.label)
         val attributes:Seq[(String,String)] = node.attributes.asAttrMap.flatten {
           case (name, value) =>
             name match {
@@ -73,4 +97,5 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
   }
 
   def body:HTMLNode=root.get.children.filter(_.tag=="body").flatten(_.children).head
+  def bodyChildren:Seq[HTMLNode]=root.get.children.filter(_.tag=="body").flatten(_.children)
 }

@@ -27,6 +27,14 @@ case class GenericHTMLNode(tag:String, attributes:Seq[(String,String)]=Nil,
   }
 }
 
+case class RawNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
+  def isEmpty:Boolean=children.isEmpty && text.isEmpty
+
+  val tag: String = "#raw"
+  override def render(option:HTMLOptions): String = {
+    text
+  }
+}
 
 case class TextNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
   def isEmpty:Boolean=children.isEmpty && text.isEmpty
@@ -44,6 +52,15 @@ case class TextNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
   }
 }
 
+case class CommentNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
+  def isEmpty:Boolean=children.isEmpty && text.isEmpty
+
+  val tag: String = "comment"
+
+  override def render(option:HTMLOptions): String = {
+    s"// $text\n<script/>"
+  }
+}
 
 trait commonFonts extends HTMLNode {
   def parameters:List[String]
