@@ -14,7 +14,9 @@ import scala.xml.{Node, XML}
 object HTML2SJS extends  ConversionUtils {
 
   def main(argv: Array[String]): Unit = {
-    val destination=File("/tmp/html2sjs")
+//    val destination=File("/tmp/html2sjs")
+    val destination=File("/opt/nttdata/libraries/scalajs-react-components/react-metronic/src/main/scala/react/metronic/partials")
+
     if(!destination.exists) destination.createDirectories()
     argv.foreach{
       entry=>
@@ -25,7 +27,7 @@ object HTML2SJS extends  ConversionUtils {
             .foreach{
               file =>
 
-                processFile(file, file.parent)
+                processFile(file, destination /*file.parent*/)
             }
 
 //          val dirDest=destination / fileEntry.name
@@ -35,7 +37,7 @@ object HTML2SJS extends  ConversionUtils {
 //            .foreach(f => processFile(f, dirDest))
 
         } else {
-          processFile(fileEntry, destination)
+          processFile(fileEntry, destination /*file.parent*/)
         }
 
     }
@@ -57,9 +59,37 @@ object HTML2SJS extends  ConversionUtils {
 
   def processString(htmlCode: String, option: HTMLOptions = HTMLOptions(), objectName:String="Code"): String = {
     val processor=new HtmlTreeProcessor(htmlCode, option)
-    val result=processor.root.get.render(option)
-    println(result)
-    org.scalafmt.Scalafmt.format(s"object $objectName {\n  def apply(): VdomElement = "+result+"\n }").get
+    val result:String=if(option.isFragment) {
+      val nodes=processor.bodyChildren
+      if(nodes.length==1)nodes.head.render(option).get
+      else
+        "VdomArray("+nodes.flatMap(_.render(option)).mkString(", ")+ ")"
+
+    } else
+      processor.root.get.render(option).get
+    //println(result)
+    //import react.icons.LineAwesome
+    val imports=new ListBuffer[String]()
+    imports ++= Seq(
+        "japgolly.scalajs.react._",
+      "japgolly.scalajs.react.vdom.html_<^._"
+    )
+    if(result.contains("LineAwesome")) imports += "react.icons.LineAwesome"
+    if(result.contains("FontAwesome")) imports += "react.icons.FontAwesome"
+    if(result.contains("FlatIcon")) imports += "react.icons.FlatIcon"
+
+    if(result.contains("i18n")) imports += "web.I18N.i18n"
+
+
+    val code = _root_.html2js.txt.fragment(
+      option.pkg,
+      objectName,
+      imports.toList,
+      result.replace("<.script(),", "")
+    )
+
+    println(code)
+    org.scalafmt.Scalafmt.format(code.toString()).get
 
   }
 
@@ -338,5 +368,5 @@ object HTML2SJS extends  ConversionUtils {
     new PrettyXmlSerializer(props).getAsString(node)
   }
 
-  case class HTMLOptions(i18n: Boolean = true)
+  case class HTMLOptions(i18n: Boolean = true, pkg:String="react.metronic.partials", isFragment:Boolean=true)
 }

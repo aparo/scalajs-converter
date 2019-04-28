@@ -18,3 +18,5 @@ addSbtPlugin("com.vmunier" % "sbt-web-scalajs" % "1.0.8-0.6")
 addSbtPlugin("ch.epfl.scala" % "sbt-web-scalajs-bundler" % "0.13.1")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-js-engine" % "1.2.3")
+
+addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.4.0")

@@ -10,7 +10,7 @@ trait HTMLNode {
   def tag:String
   def children:Seq[HTMLNode]
 
-  def render(option:HTMLOptions):String
+  def render(option:HTMLOptions):Option[String]
 }
 
 
@@ -18,12 +18,17 @@ trait HTMLNode {
 case class GenericHTMLNode(tag:String, attributes:Seq[(String,String)]=Nil,
                            children:Seq[HTMLNode]=Nil, ident:Int=0, text:Option[String]=None) extends HTMLNode {
   def isEmpty:Boolean=children.isEmpty && text.isEmpty && (tag!="#PCDATA") && attributes.isEmpty
-  override def render(option:HTMLOptions): String = {
-    val result=new ListBuffer[String]()
-    result +=s"<.$tag("
-    result += (attributes.map(a => s"${a._1} := ${a._2}") ++  children.map(_.render(option))).mkString(", ")
-    result +=")\n"
-    result.mkString("")
+  override def render(option:HTMLOptions): Option[String] = {
+    tag match {
+      case "svg" =>
+        Some("FontAwesome.marker")
+      case _ =>
+        val result=new ListBuffer[String]()
+        result +=s"<.$tag("
+        result += (attributes.map(a => s"${a._1} := ${a._2}") ++  children.flatMap(_.render(option))).mkString(", ")
+        result +=")\n"
+        Some(result.mkString(""))
+    }
   }
 }
 
@@ -31,8 +36,8 @@ case class RawNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
   def isEmpty:Boolean=children.isEmpty && text.isEmpty
 
   val tag: String = "#raw"
-  override def render(option:HTMLOptions): String = {
-    text
+  override def render(option:HTMLOptions): Option[String] = {
+    Some(text)
   }
 }
 
@@ -41,14 +46,14 @@ case class TextNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
 
   val tag: String = "#PCDATA"
 
-  override def render(option:HTMLOptions): String = {
+  override def render(option:HTMLOptions): Option[String] = {
     val result=new ListBuffer[String]()
     if(option.i18n)
       result += s"""i18n(${validateI18n(text)})"""
     else if(text.nonEmpty)
       result+=text
-    result ++= children.map(_.render(option))
-    result.mkString(", ")
+    result ++= children.flatMap(_.render(option))
+    Some(result.mkString(", "))
   }
 }
 
@@ -57,8 +62,8 @@ case class CommentNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode
 
   val tag: String = "comment"
 
-  override def render(option:HTMLOptions): String = {
-    s"// $text\n<script/>"
+  override def render(option:HTMLOptions): Option[String] = {
+    Some(s"// $text\n<.script()")
   }
 }
 
@@ -124,19 +129,19 @@ case class FontAwesome(parameters:List[String]) extends commonFonts{
   val iconPrefix="fa-"
 
 
-  def render(option: HTMLOptions): String = s"FontAwesome.${extractName}"
+  def render(option: HTMLOptions): Option[String] = Some(s"FontAwesome.${extractName}")
 }
 
 case class LineAwesome(parameters:List[String]) extends commonFonts{
 
   val iconPrefix="la-"
 
-  def render(option: HTMLOptions): String = s"LineAwesome.${extractName}"
+  def render(option: HTMLOptions): Option[String] = Some(s"LineAwesome.${extractName}")
 }
 
 case class FlatIcon(parameters:List[String]) extends commonFonts{
 
   val iconPrefix="flaticon-"
 
-  def render(option: HTMLOptions): String = s"FlatIcon.${extractName}"
+  def render(option: HTMLOptions): Option[String] = Some(s"FlatIcon.${extractName}")
 }

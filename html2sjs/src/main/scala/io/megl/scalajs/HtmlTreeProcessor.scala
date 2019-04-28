@@ -61,14 +61,16 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
                 value.split(";").map(_.trim).filter(_.nonEmpty).map {
                   st =>
                     val tokens = st.split(":").map(_.trim)
-                    s"""^.style.${convertCase(tokens(0))}""" -> s"""\"${tokens.drop(1).mkString(" ")}\""""
+                    fixStyle(s"""^.style.${convertCase(tokens(0))}""")  -> s"""\"${tokens.drop(1).mkString(" ")}\""""
                 }
               case s: String if s.startsWith("data-") =>
                 List(s"""VdomAttr("$s")""" -> s"""\"$value\"""")
               case s: String if s.startsWith("m-") =>
                 List(s"""VdomAttr("$s")""" -> s"""\"$value\"""")
               case s: String if s.startsWith("aria-") =>
-                List(s"""^.aria.${convertCase(s.replace("aria-", "")).toLowerCase()}""" -> s"""\"$value\"""")
+                List(s"""^.aria.${fixAria(convertCase(s.replace("aria-", "")).toLowerCase())}""" -> s"""\"$value\"""")
+              case "checked" =>
+                List("^.checked" -> toBoolean(value))
               case default =>
                 List(s"""^.$default""" -> s"""\"$value\"""")
             }
@@ -95,6 +97,33 @@ class HtmlTreeProcessor(htmlCode: String, option:HTMLOptions=HTMLOptions()) exte
         Some(GenericHTMLNode(label, children=children, attributes = attributes, ident=ident))
     }
   }
+
+  def fixAria(attr:String):String={
+    attr match {
+      case "haspopup" => "hasPopup"
+      case _ => attr
+    }
+  }
+
+  def fixStyle(attr:String):String={
+    attr match {
+      case "^.style.WIDTH" => "^.width"
+      case "^.style.MIN_HEIGHT" => "^.minHeight"
+      case "^.style.MAX_HEIGHT" => "^.maxHeight"
+      case "^.style.BACKGROUND_IMAGE" => "^.backgroundImage"
+      case "^.style.MARGIN_TOP" => "^.marginTop"
+      case _ => attr
+    }
+  }
+
+  def toBoolean(str: String):String={
+    str match {
+      case "true"|"false" => str
+      case "checked" => "true"
+      case _ => str
+    }
+  }
+
 
   def body:HTMLNode=root.get.children.filter(_.tag=="body").flatten(_.children).head
   def bodyChildren:Seq[HTMLNode]=root.get.children.filter(_.tag=="body").flatten(_.children)

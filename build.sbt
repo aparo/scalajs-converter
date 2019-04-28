@@ -65,6 +65,7 @@ lazy val client: Project = (project in file("client"))
 lazy val clients = Seq(client)
 
 lazy val converterLibrary = (project in file("html2sjs"))
+  .enablePlugins(SbtTwirl)
   .settings(
     name := "html2sjs",
     version := Settings.version,

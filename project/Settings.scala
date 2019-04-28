@@ -43,6 +43,7 @@ object Settings {
   /** Dependencies only used by the JVM project */
 
   val jvmLibraryDependencies = Def.setting(Seq(
+    "org.jsoup" % "jsoup" % "1.11.3",
     "com.google.guava" % "guava" % "23.0",
     "com.github.pathikrit"  %% "better-files"  % "3.6.0",
     "com.typesafe.play" %% "play-json" % "2.6.9",
@@ -50,6 +51,7 @@ object Settings {
     "org.scala-lang.modules" %% "scala-xml" % "1.1.0",
     "org.mozilla" % "rhino" % versions.rhino,
     "com.geirsson" %% "scalafmt-core" % "1.5.1",
+    "com.github.scopt" %% "scopt" % versions.scopt,
     "org.scalatest" %% "scalatest" % "3.0.5" % "test"
   ))
 
@@ -130,6 +132,7 @@ object Settings {
     val booPickle = "1.3.0"
     val uTest = "0.6.3"
     val circe = "0.9.3"
+    lazy val scopt = "4.0.0-RC2"
 
     val react = "16.3.2"
     val jQuery = "1.11.1"
@@ -138,7 +141,6 @@ object Settings {
     val rhino = "1.7.10"
     lazy val webpackVersion = "4.1.1"
     lazy val webpackDevVersion = "3.1.5"
-
     val playScripts = "0.5.0"
   }
 }

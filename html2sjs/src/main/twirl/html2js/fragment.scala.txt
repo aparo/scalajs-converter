@@ -1,0 +1,15 @@
+@(pkg:String, name:String, imports:List[String], result:String)
+/*
+ * Copyright 2019 - NTTDATA Italia S.P.A. All Rights Reserved.
+ */
+
+package @{pkg}
+@for(imp<-imports){import @{imp}
+}
+
+object @{name}{
+
+  def apply(): VdomNode = @{result}
+
+}
+

@@ -13,11 +13,13 @@ object MigrateTemplate extends App {
     file =>
       println(file)
       val options=HTMLOptions()
-      val result=new HtmlTreeProcessor(file.contentAsString)
-      result.bodyChildren.foreach{
-        child =>
-          println(child.render(options))
-      }
+      val result=new JsoupTreeProcessor(file.contentAsString)
+
+//      val result=new HtmlTreeProcessor(file.contentAsString)
+//      result.bodyChildren.foreach{
+//        child =>
+//          println(child.render(options))
+//      }
 
   }
 
