@@ -11,11 +11,12 @@ import io.megl.scalajs.HTML2SJS.HTMLOptions
 
 import scala.xml.{Node, XML}
 
-object HTML2SJS extends  ConversionUtils {
+object HTML2SJS extends ConversionUtils {
 
   def main(argv: Array[String]): Unit = {
 //    val destination=File("/tmp/html2sjs")
-    val destination=File("/opt/nttdata/libraries/scalajs-react-components/react-metronic/src/main/scala/react/metronic/partials")
+//    val destination=File("/opt/nttdata/libraries/scalajs-react-components/react-metronic/src/main/scala/react/metronic/partials")
+    val destination=File("/tmp/partials")
 
     if(!destination.exists) destination.createDirectories()
     argv.foreach{

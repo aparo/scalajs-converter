@@ -4,74 +4,79 @@ import io.megl.scalajs.HTML2SJS.{HTMLOptions, validateI18n}
 
 import scala.collection.mutable.ListBuffer
 
-trait HTMLNode {
-  def isEmpty:Boolean
-  def nonEmpty:Boolean = !isEmpty
-  def tag:String
-  def children:Seq[HTMLNode]
+sealed trait HTMLNode {
+  def isEmpty: Boolean
 
-  def render(option:HTMLOptions):Option[String]
+  def nonEmpty: Boolean = !isEmpty
+
+  def tag: String
+
+  def children: Seq[HTMLNode]
+
+  def render(option: HTMLOptions): Option[String]
 }
 
 
+case class GenericHTMLNode(tag: String, attributes: Seq[(String, String)] = Nil,
+                           children: Seq[HTMLNode] = Nil, ident: Int = 0, text: Option[String] = None) extends HTMLNode {
+  def isEmpty: Boolean = children.isEmpty && text.isEmpty && (tag != "#PCDATA") && attributes.isEmpty
 
-case class GenericHTMLNode(tag:String, attributes:Seq[(String,String)]=Nil,
-                           children:Seq[HTMLNode]=Nil, ident:Int=0, text:Option[String]=None) extends HTMLNode {
-  def isEmpty:Boolean=children.isEmpty && text.isEmpty && (tag!="#PCDATA") && attributes.isEmpty
-  override def render(option:HTMLOptions): Option[String] = {
+  override def render(option: HTMLOptions): Option[String] = {
     tag match {
-      case "svg" =>
-        Some("FontAwesome.marker")
+//      case "svg" =>
+//        Some("FontAwesome.marker")
       case _ =>
-        val result=new ListBuffer[String]()
-        result +=s"<.$tag("
-        result += (attributes.map(a => s"${a._1} := ${a._2}") ++  children.flatMap(_.render(option))).mkString(", ")
-        result +=")\n"
+        val result = new ListBuffer[String]()
+        result += s"<.$tag("
+        result += (attributes.map(a => s"${a._1} := ${a._2}") ++ children.flatMap(_.render(option))).mkString(", ")
+        result += ")\n"
         Some(result.mkString(""))
     }
   }
 }
 
-case class RawNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
-  def isEmpty:Boolean=children.isEmpty && text.isEmpty
+case class RawNode(text: String, children: Seq[HTMLNode] = Nil) extends HTMLNode {
+  def isEmpty: Boolean = children.isEmpty && text.isEmpty
 
   val tag: String = "#raw"
-  override def render(option:HTMLOptions): Option[String] = {
+
+  override def render(option: HTMLOptions): Option[String] = {
     Some(text)
   }
 }
 
-case class TextNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
-  def isEmpty:Boolean=children.isEmpty && text.isEmpty
+case class TextNode(text: String, children: Seq[HTMLNode] = Nil) extends HTMLNode {
+  def isEmpty: Boolean = children.isEmpty && text.isEmpty
 
   val tag: String = "#PCDATA"
 
-  override def render(option:HTMLOptions): Option[String] = {
-    val result=new ListBuffer[String]()
-    if(option.i18n)
+  override def render(option: HTMLOptions): Option[String] = {
+    val result = new ListBuffer[String]()
+    if (option.i18n)
       result += s"""i18n(${validateI18n(text)})"""
-    else if(text.nonEmpty)
-      result+=text
+    else if (text.nonEmpty)
+      result += text
     result ++= children.flatMap(_.render(option))
     Some(result.mkString(", "))
   }
 }
 
-case class CommentNode(text:String, children:Seq[HTMLNode]=Nil) extends HTMLNode {
-  def isEmpty:Boolean=children.isEmpty && text.isEmpty
+case class CommentNode(text: String, children: Seq[HTMLNode] = Nil) extends HTMLNode {
+  def isEmpty: Boolean = children.isEmpty && text.isEmpty
 
   val tag: String = "comment"
 
-  override def render(option:HTMLOptions): Option[String] = {
+  override def render(option: HTMLOptions): Option[String] = {
     Some(s"// $text\n<.script()")
   }
 }
 
 trait commonFonts extends HTMLNode {
-  def parameters:List[String]
-  def iconPrefix:String
+  def parameters: List[String]
 
-  lazy val sizingNames=Set(
+  def iconPrefix: String
+
+  lazy val sizingNames = Set(
     "lg",
     "xs",
     "sm",
@@ -104,18 +109,19 @@ trait commonFonts extends HTMLNode {
     "stack-2x",
     "inverse"
   )
-  def children:Seq[HTMLNode]=Nil
+
+  def children: Seq[HTMLNode] = Nil
 
   def isEmpty: Boolean = parameters.isEmpty
 
   def tag: String = "i"
 
-  def cookName(name: String):String={
-    val tokens=name.split('-')
+  def cookName(name: String): String = {
+    val tokens = name.split('-')
     tokens.head + tokens.tail.map(_.capitalize).mkString
   }
 
-  def extractName:String={
+  def extractName: String = {
     cookName(parameters.filter(_.startsWith(iconPrefix))
       .map(_.substring(iconPrefix.length))
       .filterNot(sizingNames.contains)
@@ -125,23 +131,23 @@ trait commonFonts extends HTMLNode {
 
 }
 
-case class FontAwesome(parameters:List[String]) extends commonFonts{
-  val iconPrefix="fa-"
+case class FontAwesome(parameters: List[String]) extends commonFonts {
+  val iconPrefix = "fa-"
 
 
   def render(option: HTMLOptions): Option[String] = Some(s"FontAwesome.${extractName}")
 }
 
-case class LineAwesome(parameters:List[String]) extends commonFonts{
+case class LineAwesome(parameters: List[String]) extends commonFonts {
 
-  val iconPrefix="la-"
+  val iconPrefix = "la-"
 
   def render(option: HTMLOptions): Option[String] = Some(s"LineAwesome.${extractName}")
 }
 
-case class FlatIcon(parameters:List[String]) extends commonFonts{
+case class FlatIcon(parameters: List[String]) extends commonFonts {
 
-  val iconPrefix="flaticon-"
+  val iconPrefix = "flaticon-"
 
   def render(option: HTMLOptions): Option[String] = Some(s"FlatIcon.${extractName}")
 }
