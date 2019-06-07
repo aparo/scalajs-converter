@@ -2,7 +2,15 @@ import sbt.Keys._
 import sbt.Project.projectToRef
 import sbtcrossproject.CrossPlugin.autoImport.crossProject
 import sbtcrossproject.CrossType
+import deployssh.DeploySSH._
+import fr.janalyse.ssh.SSH
 
+inThisBuild(
+  Seq(
+    scalaVersion := "2.12.8",
+    parallelExecution := false//,
+  )
+)
 // a special crossProject for configuring a JS/JVM/shared structure
 lazy val shared = (crossProject(JSPlatform, JVMPlatform).crossType(CrossType.Pure) in file("shared"))
   .settings(
@@ -21,8 +29,6 @@ lazy val elideOptions = settingKey[Seq[String]]("Set limit for elidable function
 lazy val client: Project = (project in file("client"))
   .settings(
     name := "client",
-    version := Settings.version,
-    scalaVersion := Settings.versions.scala,
     scalacOptions ++= Settings.scalacOptions ++ Seq("-P:scalajs:suppressExportDeprecations"),
     libraryDependencies ++= Settings.scalajsDependencies.value,
       scalaJSUseMainModuleInitializer := true,
@@ -68,8 +74,6 @@ lazy val converterLibrary = (project in file("html2sjs"))
   .enablePlugins(SbtTwirl)
   .settings(
     name := "html2sjs",
-    version := Settings.version,
-    scalaVersion := Settings.versions.scala,
     scalacOptions ++= Settings.scalacOptions,
     libraryDependencies ++= Settings.jvmLibraryDependencies.value,
   )
@@ -79,8 +83,6 @@ lazy val converterLibrary = (project in file("html2sjs"))
 lazy val server = (project in file("server"))
   .settings(
     name := "scalajs-converter",
-    version := Settings.version,
-    scalaVersion := Settings.versions.scala,
     scalacOptions ++= Settings.scalacOptions,
     libraryDependencies ++= Settings.serverDependencies.value,
       libraryDependencies += guice,
@@ -93,11 +95,54 @@ lazy val server = (project in file("server"))
     // compress CSS
     LessKeys.compress in Assets := true
   )
-  .enablePlugins(PlayScala)
-  .enablePlugins(WebScalaJSBundlerPlugin)
+  .enablePlugins(PlayScala, WebScalaJSBundlerPlugin, DeploySSH)
   .disablePlugins(PlayLayoutPlugin) // use the standard directory layout instead of Play's custom
   .aggregate(clients.map(projectToRef): _*)
   .dependsOn(converterLibrary)
+  .settings(
+    deployConfigs ++= Seq(
+      ServerConfig(name="scalajs-converter", host="scalajs-converter.di-nttdata.com", user=Some("root")),
+    ),
+    deployArtifacts ++= Seq(
+      ArtifactSSH((packageBin in Universal).value, s"/opt/deploy/${name.value}")
+    ),
+    deploySshExecBefore ++= Seq(
+      (ssh: SSH) => ssh.shell{ shell =>
+        shell.execute(s"cd /opt/deploy/${name.value}")
+        shell.execute("touch pid")
+        val pid = shell.execute("cat pid")
+        if (pid != "") {
+          shell.execute(s"kill ${pid}; sleep 5; kill -9 ${pid}")
+        } else ()
+        shell.execute("rm pid")
+      }
+    ),
+    deploySshExecAfter ++= Seq(
+      (ssh: SSH) => {
+       ssh.scp { scp =>
+        val appName=sbt.Keys.name.value
+        scp.send(file(s"./deploy/${ssh.options.name.get}.conf"), s"/opt/deploy/$appName")
+       }
+        ssh.shell{ shell =>
+          val appName=sbt.Keys.name.value
+          val name = (packageName in Universal).value
+          val script = (executableScriptName in Universal).value
+          shell.execute(s"cd /opt/deploy/$appName")
+          shell.execute(s"unzip -q -o ${name}.zip")
+          shell.execute(s"rm ${name}.zip")
+          shell.execute(s"nohup ./${name}/bin/${script} -Dconfig.file=/opt/deploy/$appName/app.conf &") 
+          shell.execute("echo $! > pid")
+          shell.execute("touch pid")
+          val pid = shell.execute("cat pid")
+          val (_, status) = shell.executeWithStatus("echo $?")
+          if (status != 0 || pid == "") {
+            throw new RuntimeException(s"status=${status}, pid=${pid}. please check package")
+          }
+        }
+      }
+    )
+  )
+
 
 // Command for building a release
 lazy val ReleaseCmd = Command.command("release") {

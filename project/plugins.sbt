@@ -3,7 +3,7 @@
 
 addSbtPlugin("org.portable-scala"        % "sbt-scalajs-crossproject"  % "0.6.0")
 
-addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.27")
+addSbtPlugin("org.scala-js" % "sbt-scalajs" % "0.6.28")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-less" % "1.1.2")
 
@@ -20,3 +20,8 @@ addSbtPlugin("ch.epfl.scala" % "sbt-web-scalajs-bundler" % "0.13.1")
 addSbtPlugin("com.typesafe.sbt" % "sbt-js-engine" % "1.2.3")
 
 addSbtPlugin("com.typesafe.sbt" % "sbt-twirl" % "1.4.0")
+
+
+resolvers += "JAnalyse Repository" at "http://www.janalyse.fr/repository/"
+
+addSbtPlugin("com.github.shmishleniy" % "sbt-deploy-ssh" % "0.1.4")
